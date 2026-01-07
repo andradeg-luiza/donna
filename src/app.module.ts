@@ -1,14 +1,9 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { WhatsappModule } from './presentation/whatsapp/whatsapp.module';
+import { PrismaModule } from './prisma/prisma.module';
+import { UsersModule } from './users/users.module';
+import { TasksModule } from './tasks/tasks.module';
 
 @Module({
-  imports: [
-    ConfigModule.forRoot({
-      isGlobal: true, // permite usar process.env em qualquer lugar
-      envFilePath: '.env', // garante que o Nest leia o arquivo .env
-    }),
-    WhatsappModule,
-  ],
+  imports: [PrismaModule, UsersModule, TasksModule],
 })
 export class AppModule {}
