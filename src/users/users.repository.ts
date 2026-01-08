@@ -5,28 +5,28 @@ import { PrismaService } from '../prisma/prisma.service';
 export class UsersRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  createUser(phone: string, name?: string) {
-    return this.prisma.user.create({
-      data: { phone, name },
-    });
+  async createUser(phone: string, name?: string) {
+    return this.prisma.user.create({ data: { phone, name } });
   }
 
-  findById(id: string) {
+  async findById(id: string) {
     return this.prisma.user.findUnique({
       where: { id },
       include: { tasks: true },
     });
   }
 
-  findByPhone(phone: string) {
-    return this.prisma.user.findUnique({
-      where: { phone },
-    });
+  async findByPhone(phone: string) {
+    return this.prisma.user.findUnique({ where: { phone } });
   }
 
-  listUsers() {
-    return this.prisma.user.findMany({
-      include: { tasks: true },
+  async listUsers() {
+    return this.prisma.user.findMany({ include: { tasks: true } });
+  }
+
+  async deleteUser(id: string) {
+    return this.prisma.user.delete({
+      where: { id },
     });
   }
 }
