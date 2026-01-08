@@ -7,18 +7,17 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  async createUser(@Body() body: CreateUserDto) {
-    const { phone, name } = body;
-    return this.usersService.createUser(phone, name);
+  createUser(@Body() body: CreateUserDto) {
+    return this.usersService.createUser(body.phone, body.name);
   }
 
   @Get()
-  async listUsers() {
+  listUsers() {
     return this.usersService.listUsers();
   }
 
   @Get(':id')
-  async getUser(@Param('id') id: string) {
+  getUser(@Param('id') id: string) {
     return this.usersService.getUserById(id);
   }
 }
