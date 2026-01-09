@@ -1,44 +1,23 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { HttpExceptionFilter } from './common/filter/http-exception.filter';
 import { ValidationPipe } from '@nestjs/common';
-import { GlobalHttpExceptionFilter } from './common/filter/http-exception.filter';
-import { SuccessInterceptor } from './common/interceptors/success.interceptor';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // ativa validação automática dos DTOs
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true,
-      transform: true,
+      whitelist: true, // remove campos extras
+      forbidNonWhitelisted: true, // erro se enviar campos desconhecidos
+      transform: true, // transforma payload em DTO automaticamente
     }),
   );
 
-  app.useGlobalFilters(new GlobalHttpExceptionFilter());
-  app.useGlobalInterceptors(new SuccessInterceptor());
-
-  const config = new DocumentBuilder()
-    .setTitle('Donna API')
-    .setDescription('API documentation for Users and Tasks')
-    .setVersion('1.0')
-    .addApiKey(
-      { type: 'apiKey', name: 'x-assistant-key', in: 'header' },
-      'assistant-key',
-    )
-    .addApiKey(
-      { type: 'apiKey', name: 'x-user-phone', in: 'header' },
-      'user-phone',
-    )
-    .addTag('Users')
-    .addTag('Tasks')
-    .build();
-
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+  // ativa o filtro global de erros
+  app.useGlobalFilters(new HttpExceptionFilter());
 
   await app.listen(3000);
 }
-
-void bootstrap();
+bootstrap();

@@ -1,37 +1,38 @@
-import { Controller, Post, Body, Get, Param, Patch, Delete, Headers } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Delete,
+} from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
-@ApiTags('Tasks')
 @Controller('tasks')
 export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
-  @Post()
-  @ApiOperation({ summary: 'Create a new task for a user' })
-  create(
-    @Headers('x-user-phone') phone: string,
+  @Post(':phone')
+  createTask(
+    @Param('phone') phone: string,
     @Body() body: CreateTaskDto,
   ) {
-    return this.tasksService.create(phone, body);
+    return this.tasksService.createTask(phone, body);
   }
 
-  @Get()
-  @ApiOperation({ summary: 'List tasks for a user' })
-  findByUser(@Headers('x-user-phone') phone: string) {
-    return this.tasksService.findByUser(phone);
+  @Get(':phone')
+  listTasks(@Param('phone') phone: string) {
+    return this.tasksService.listTasks(phone);
   }
 
-  @Patch(':id/done')
-  @ApiOperation({ summary: 'Mark a task as done' })
+  @Post('done/:id')
   markDone(@Param('id') id: string) {
-    return this.tasksService.markDone(id);
+    return this.tasksService.markTaskDone(id);
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Delete a task by id' })
-  delete(@Param('id') id: string) {
-    return this.tasksService.delete(id);
+  deleteTask(@Param('id') id: string) {
+    return this.tasksService.deleteTask(id);
   }
 }

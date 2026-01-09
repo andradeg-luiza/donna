@@ -1,35 +1,83 @@
-import { Injectable } from '@nestjs/common';
-import { TasksRepository } from './tasks.repository';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
 import { UsersService } from '../users/users.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 
 @Injectable()
 export class TasksService {
   constructor(
-    private readonly tasksRepository: TasksRepository,
+    private readonly prisma: PrismaService,
     private readonly usersService: UsersService,
   ) {}
 
-  async create(phone: string, data: CreateTaskDto) {
-    const user = await this.usersService.findByPhone(phone);
+  async createTask(phone: string, dto: CreateTaskDto) {
+    if (!phone) {
+      throw new BadRequestException('Phone is required');
+    }
 
-    return this.tasksRepository.createTask({
-      userId: user.id,
-      title: data.title,
-      description: data.description,
+    const user = await this.usersService.getUserByIdOrPhone(phone);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return this.prisma.task.create({
+      data: {
+        title: dto.title,
+        description: dto.description,
+        userId: user.id,
+      },
     });
   }
 
-  async findByUser(phone: string) {
-    const user = await this.usersService.findByPhone(phone);
-    return this.tasksRepository.findByUserId(user.id);
+  async listTasks(phone: string) {
+    if (!phone) {
+      throw new BadRequestException('Phone is required');
+    }
+
+    const user = await this.usersService.getUserByIdOrPhone(phone);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return this.prisma.task.findMany({
+      where: { userId: user.id },
+    });
   }
 
-  async markDone(id: string) {
-    return this.tasksRepository.markTaskDone(id);
+  async markTaskDone(id: string) {
+    const task = await this.prisma.task.findUnique({
+      where: { id },
+    });
+
+    if (!task) {
+      throw new NotFoundException('Task not found');
+    }
+
+    return this.prisma.task.update({
+      where: { id },
+      data: { done: true },
+    });
   }
 
-  async delete(id: string) {
-    return this.tasksRepository.deleteTask(id);
+  async deleteTask(id: string) {
+    const task = await this.prisma.task.findUnique({
+      where: { id },
+    });
+
+    if (!task) {
+      throw new NotFoundException('Task not found');
+    }
+
+    await this.prisma.task.delete({
+      where: { id },
+    });
+
+    return { success: true };
   }
 }
