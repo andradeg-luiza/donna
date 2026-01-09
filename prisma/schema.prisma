@@ -8,13 +8,18 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  phone     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String    @id @default(uuid())
+  phone         String    @unique
+  email         String    @unique
+  passwordHash  String
+  name          String?
+  mfaEnabled    Boolean   @default(false)
+  mfaCode       String?
+  mfaExpiresAt  DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
-  tasks     Task[]
+  tasks         Task[]
 }
 
 model Task {

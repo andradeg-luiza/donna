@@ -1,13 +1,8 @@
-import { Module, MiddlewareConsumer } from '@nestjs/common';
-import { UsersModule } from './users/users.module';
-import { TasksModule } from './tasks/tasks.module';
-import { AssistantAuthMiddleware } from './common/middleware/assistant-auth.middleware';
+import { Module } from '@nestjs/common';
+import { AuthModule } from './auth/auth.module';
+import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
-  imports: [UsersModule, TasksModule],
+  imports: [AuthModule, PrismaModule],
 })
-export class AppModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(AssistantAuthMiddleware).forRoutes('*');
-  }
-}
+export class AppModule {}
