@@ -21,8 +21,16 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('Donna API')
-    .setDescription('API documentation for Users and Tasks management')
+    .setDescription('API documentation for Users and Tasks')
     .setVersion('1.0')
+    .addApiKey(
+      { type: 'apiKey', name: 'x-assistant-key', in: 'header' },
+      'assistant-key',
+    )
+    .addApiKey(
+      { type: 'apiKey', name: 'x-user-phone', in: 'header' },
+      'user-phone',
+    )
     .addTag('Users')
     .addTag('Tasks')
     .build();

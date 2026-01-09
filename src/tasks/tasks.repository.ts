@@ -5,25 +5,20 @@ import { PrismaService } from '../prisma/prisma.service';
 export class TasksRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  createTask(userId: string, title: string, description?: string) {
+  createTask(data: { userId: string; title: string; description?: string }) {
     return this.prisma.task.create({
-      data: { userId, title, description },
+      data,
     });
   }
 
-  listTasksByUser(userId: string) {
+  findByUserId(userId: string) {
     return this.prisma.task.findMany({
       where: { userId },
+      orderBy: { createdAt: 'desc' },
     });
   }
 
-  findById(id: string) {
-    return this.prisma.task.findUnique({
-      where: { id },
-    });
-  }
-
-  markAsDone(id: string) {
+  markTaskDone(id: string) {
     return this.prisma.task.update({
       where: { id },
       data: { done: true },
@@ -33,13 +28,6 @@ export class TasksRepository {
   deleteTask(id: string) {
     return this.prisma.task.delete({
       where: { id },
-    });
-  }
-
-  // 🔥 ESTE É O MÉTODO QUE ESTAVA FALTANDO
-  deleteTasksByUserId(userId: string) {
-    return this.prisma.task.deleteMany({
-      where: { userId },
     });
   }
 }

@@ -1,44 +1,35 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { TasksRepository } from './tasks.repository';
-import { UsersRepository } from '../users/users.repository';
+import { UsersService } from '../users/users.service';
+import { CreateTaskDto } from './dto/create-task.dto';
 
 @Injectable()
 export class TasksService {
   constructor(
     private readonly tasksRepository: TasksRepository,
-    private readonly usersRepository: UsersRepository,
+    private readonly usersService: UsersService,
   ) {}
 
-  async createTaskForUser(userId: string, title: string, description?: string) {
-    const user = await this.usersRepository.findById(userId);
-    if (!user) throw new NotFoundException('User not found');
+  async create(phone: string, data: CreateTaskDto) {
+    const user = await this.usersService.findByPhone(phone);
 
-    return this.tasksRepository.createTask(userId, title, description);
+    return this.tasksRepository.createTask({
+      userId: user.id,
+      title: data.title,
+      description: data.description,
+    });
   }
 
-  async listTasksByUser(userId: string) {
-    const user = await this.usersRepository.findById(userId);
-    if (!user) throw new NotFoundException('User not found');
-
-    return this.tasksRepository.listTasksByUser(userId);
+  async findByUser(phone: string) {
+    const user = await this.usersService.findByPhone(phone);
+    return this.tasksRepository.findByUserId(user.id);
   }
 
-  async markTaskAsDone(taskId: string) {
-    const task = await this.tasksRepository.findById(taskId);
-    if (!task) throw new NotFoundException('Task not found');
-
-    return this.tasksRepository.markAsDone(taskId);
+  async markDone(id: string) {
+    return this.tasksRepository.markTaskDone(id);
   }
 
-  async deleteTask(id: string) {
-    const task = await this.tasksRepository.findById(id);
-
-    if (!task) {
-      throw new NotFoundException('Task not found');
-    }
-
-    await this.tasksRepository.deleteTask(id);
-
-    return { message: 'Task deleted successfully' };
+  async delete(id: string) {
+    return this.tasksRepository.deleteTask(id);
   }
 }
