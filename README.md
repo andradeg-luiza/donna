@@ -1,17 +1,25 @@
 # Donna — Assistente Pessoal Inteligente via WhatsApp
 
-Donna é um assistente pessoal conversacional que funciona diretamente pelo WhatsApp, focado em:
+Donna é um assistente pessoal conversacional que funciona pelo WhatsApp, focado em:
 
 - 📅 **Agenda e compromissos**
 - ⏰ **Lembretes inteligentes**
 - 📝 **Tarefas**
-- 🛒 **Listas** (compras, afazeres, inventários)
+- 🛒 **Listas** (compras, afazeres, etc.)
 - 💬 **Conversa em linguagem natural**
 - 🧠 **Memória contextual por usuário**
 
 O objetivo é ajudar pessoas a organizarem sua vida pessoal de forma simples, natural e contínua, usando o canal que elas já utilizam todos os dias: **WhatsApp**.
 
 Donna evoluirá progressivamente até se tornar uma assistente altamente inteligente, capaz de compreender contexto, preferências e rotinas — uma verdadeira copilota da vida pessoal.
+
+---
+
+## 📘 Identidade da Donna
+
+A personalidade, tom de voz, princípios e estilo de comunicação da Donna estão documentados em:
+
+👉 **[docs/DONNA-IDENTIDADE.md](docs/DONNA-IDENTIDADE.md)**
 
 ---
 
@@ -122,6 +130,7 @@ Donna evoluirá progressivamente até se tornar uma assistente altamente intelig
     /infrastructure    # Implementações (DB, OpenAI, WhatsApp API)
     /config            # Variáveis e Módulos NestJS
   /test                # Unitários, Integração e Conversação
+  /docs                # Documentação do projeto (Identidade, Arquitetura, etc.)
 ```
 
 ---
@@ -170,3 +179,6 @@ Donna evoluirá progressivamente até se tornar uma assistente altamente intelig
 7. **Fase 6:** Fluxos Conversacionais Complexos  
 8. **Fase 7:** Qualidade e Testes  
 9. **Fase 8:** Deploy e Evolução  
+
+---
+
