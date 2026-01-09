@@ -1,14 +1,17 @@
-import { Module } from '@nestjs/common';
-import { PrismaModule } from '../prisma/prisma.module';
-import { TasksRepository } from './tasks.repository';
+import { Module, forwardRef } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { TasksController } from './tasks.controller';
+import { TasksRepository } from './tasks.repository';
+import { PrismaModule } from '../prisma/prisma.module';
 import { UsersModule } from '../users/users.module';
 
 @Module({
-  imports: [PrismaModule, UsersModule],
-  providers: [TasksRepository, TasksService],
+  imports: [
+    PrismaModule,
+    forwardRef(() => UsersModule),
+  ],
   controllers: [TasksController],
-  exports: [TasksRepository, TasksService],
+  providers: [TasksService, TasksRepository],
+  exports: [TasksRepository],
 })
 export class TasksModule {}

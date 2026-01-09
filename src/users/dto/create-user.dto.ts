@@ -1,22 +1,15 @@
-import {
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  Length,
-  Matches,
-} from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsString, Length } from 'class-validator';
 
 export class CreateUserDto {
+  @ApiProperty({ example: 'Luiza Lima', description: 'User full name' })
   @IsString()
-  @IsNotEmpty({ message: 'Phone is required' })
-  @Matches(/^\d{10,13}$/, {
-    message:
-      'Phone must contain only digits and be between 10 and 13 characters',
-  })
-  phone!: string;
+  @IsNotEmpty()
+  name!: string;
 
-  @IsOptional()
+  @ApiProperty({ example: '81994563827', description: 'User phone number' })
   @IsString()
-  @Length(2, 100, { message: 'Name must be between 2 and 100 characters' })
-  name?: string;
+  @IsNotEmpty()
+  @Length(10, 11)
+  phone!: string;
 }

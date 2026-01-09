@@ -1,21 +1,26 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { UsersRepository } from './users.repository';
+import { CreateUserDto } from './dto/create-user.dto';
+import { TasksRepository } from '../tasks/tasks.repository';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly usersRepository: UsersRepository) {}
+  constructor(
+    private readonly usersRepository: UsersRepository,
+    private readonly tasksRepository: TasksRepository,
+  ) {}
 
-  async createUser(phone: string, name?: string) {
-    const existing = await this.usersRepository.findByPhone(phone);
-    if (existing) {
-      throw new BadRequestException('User with this phone already exists');
-    }
-
-    return this.usersRepository.createUser(phone, name);
+  async createUser(data: CreateUserDto) {
+    return this.usersRepository.createUser(data);
   }
 
-  async getUserById(id: string) {
+  async findAll() {
+    return this.usersRepository.findAll();
+  }
+
+  async findOne(id: string) {
     const user = await this.usersRepository.findById(id);
+
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -23,16 +28,17 @@ export class UsersService {
     return user;
   }
 
-  async listUsers() {
-    return this.usersRepository.listUsers();
-  }
-
   async deleteUser(id: string) {
     const user = await this.usersRepository.findById(id);
+
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
+    // Delete tasks first (safe delete)
+    await this.tasksRepository.deleteTasksByUserId(id);
+
+    // Delete user
     await this.usersRepository.deleteUser(id);
 
     return { message: 'User deleted successfully' };
