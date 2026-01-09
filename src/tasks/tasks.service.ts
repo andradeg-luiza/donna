@@ -14,6 +14,9 @@ export class TasksService {
     private readonly usersService: UsersService,
   ) {}
 
+  /**
+   * Cria uma task para um usuário identificado por telefone.
+   */
   async createTask(phone: string, dto: CreateTaskDto) {
     if (!phone) {
       throw new BadRequestException('Phone is required');
@@ -34,6 +37,9 @@ export class TasksService {
     });
   }
 
+  /**
+   * Lista tasks de um usuário.
+   */
   async listTasks(phone: string) {
     if (!phone) {
       throw new BadRequestException('Phone is required');
@@ -50,6 +56,9 @@ export class TasksService {
     });
   }
 
+  /**
+   * Marca uma task como concluída.
+   */
   async markTaskDone(id: string) {
     const task = await this.prisma.task.findUnique({
       where: { id },
@@ -65,6 +74,9 @@ export class TasksService {
     });
   }
 
+  /**
+   * Remove uma task.
+   */
   async deleteTask(id: string) {
     const task = await this.prisma.task.findUnique({
       where: { id },
