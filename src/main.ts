@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { ValidationPipe, ClassSerializerInterceptor } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { HttpExceptionFilter } from './common/filter/http-exception.filter';
+import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -10,7 +11,7 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle('API')
     .setDescription(
-      'Documentação da API — <a href="/api-json" target="_blank">Visualizar JSON</a>',
+      'Documentação da API — <a href="/api-json" target="_blank">Baixar JSON</a>',
     )
     .setVersion('1.0')
     .addBearerAuth()
@@ -31,6 +32,10 @@ async function bootstrap() {
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
 
   app.useGlobalFilters(new HttpExceptionFilter());
+
+  // ⭐ AUTENTICAÇÃO GLOBAL
+  const reflector = app.get(Reflector);
+  app.useGlobalGuards(new JwtAuthGuard(reflector));
 
   await app.listen(3000);
 }
