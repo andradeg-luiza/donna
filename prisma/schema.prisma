@@ -23,13 +23,27 @@ model User {
 }
 
 model Task {
+  id          String     @id @default(uuid())
+  title       String
+  description String?
+  done        Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  userId String
+  user   User       @relation(fields: [userId], references: [id])
+
+  items  TaskItem[]
+}
+
+model TaskItem {
   id        String   @id @default(uuid())
   title     String
-  description String?
   done      Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  taskId String
+  task   Task    @relation(fields: [taskId], references: [id])
 }
+

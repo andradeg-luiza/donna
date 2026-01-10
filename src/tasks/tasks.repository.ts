@@ -38,4 +38,11 @@ export class TasksRepository {
       where: { id, userId },
     });
   }
+  
+  findById(id: string) {
+    return this.prisma.task.findUnique({
+      where: { id },
+    });
+  }
+  
 }

@@ -32,4 +32,8 @@ export class TasksService {
     if (result.count === 0) throw new NotFoundException('Tarefa não encontrada.');
     return { message: 'Tarefa removida.' };
   }
+
+  async findById(taskId: string) {
+    return this.repo.findById(taskId); // 👈 CORREÇÃO AQUI
+  }
 }
