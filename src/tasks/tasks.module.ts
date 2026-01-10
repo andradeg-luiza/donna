@@ -8,6 +8,6 @@ import { PrismaModule } from '../prisma/prisma.module';
   imports: [PrismaModule],
   controllers: [TasksController],
   providers: [TasksService, TasksRepository],
-  exports: [TasksService], // 👈 ESSA LINHA É O QUE FALTAVA
+  exports: [TasksService],
 })
 export class TasksModule {}
