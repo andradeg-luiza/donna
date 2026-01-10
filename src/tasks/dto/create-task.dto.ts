@@ -6,8 +6,17 @@ export class CreateTaskDto {
   @IsString()
   title!: string;
 
-  @ApiProperty({ example: 'Pão integral na padaria' })
+  @ApiProperty({ example: 'Pão integral na padaria', required: false })
   @IsOptional()
   @IsString()
   description?: string;
+
+  @ApiProperty({
+    example: 'Compras',
+    required: false,
+    description: 'Categoria da task. Se não enviada, o sistema poderá sugerir automaticamente.',
+  })
+  @IsOptional()
+  @IsString()
+  category?: string;
 }

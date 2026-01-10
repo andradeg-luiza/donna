@@ -2,17 +2,31 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { TasksRepository } from './tasks.repository';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
+import { CategorySuggestionService } from './category-suggestion.service';
 
 @Injectable()
 export class TasksService {
-  constructor(private repo: TasksRepository) {}
+  constructor(
+    private repo: TasksRepository,
+    private categorySuggestionService: CategorySuggestionService,
+  ) {}
 
-  create(userId: string, data: CreateTaskDto) {
-    return this.repo.create(userId, data);
+  async create(userId: string, data: CreateTaskDto) {
+    let category = data.category;
+
+    if (!category) {
+      const baseText = `${data.title} ${data.description ?? ''}`.trim();
+      category = this.categorySuggestionService.suggestCategory(baseText);
+    }
+
+    return this.repo.create(userId, {
+      ...data,
+      category,
+    });
   }
 
-  findAll(userId: string) {
-    return this.repo.findAll(userId);
+  findAll(userId: string, category?: string) {
+    return this.repo.findAll(userId, category);
   }
 
   async findOne(userId: string, id: string) {
@@ -34,6 +48,6 @@ export class TasksService {
   }
 
   async findById(taskId: string) {
-    return this.repo.findById(taskId); // 👈 CORREÇÃO AQUI
+    return this.repo.findById(taskId);
   }
 }

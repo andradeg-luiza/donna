@@ -101,7 +101,6 @@ export class AuthService {
       throw new UnauthorizedException('Código inválido.');
     }
 
-    // Limpar MFA após uso
     await this.prisma.user.update({
       where: { id: user.id },
       data: {

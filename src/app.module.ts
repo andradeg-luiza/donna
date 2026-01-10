@@ -5,6 +5,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { TasksModule } from './tasks/tasks.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { TaskItemsModule } from './task-items/task-items.module';
+import { CategoriesModule } from './categories/categories.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { TaskItemsModule } from './task-items/task-items.module';
     PrismaModule,
     TasksModule,
     TaskItemsModule,
+    CategoriesModule,
   ],
   providers: [
     {

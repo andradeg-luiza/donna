@@ -1,38 +1,56 @@
-import { Controller, Post, Get, Patch, Delete, Body, Param, Req } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { Request } from 'express';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Tasks')
-@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller('tasks')
 export class TasksController {
-  constructor(private service: TasksService) {}
+  constructor(private readonly tasksService: TasksService) {}
 
   @Post()
-  create(@Req() req: Request, @Body() data: CreateTaskDto) {
-    return this.service.create(req.user.sub, data);
+  create(@CurrentUser('id') userId: string, @Body() dto: CreateTaskDto) {
+    return this.tasksService.create(userId, dto);
   }
 
   @Get()
-  findAll(@Req() req: Request) {
-    return this.service.findAll(req.user.sub);
+  findAll(
+    @CurrentUser('id') userId: string,
+    @Query('category') category?: string,
+  ) {
+    return this.tasksService.findAll(userId, category);
   }
 
   @Get(':id')
-  findOne(@Req() req: Request, @Param('id') id: string) {
-    return this.service.findOne(req.user.sub, id);
+  findOne(@CurrentUser('id') userId: string, @Param('id') id: string) {
+    return this.tasksService.findOne(userId, id);
   }
 
   @Patch(':id')
-  update(@Req() req: Request, @Param('id') id: string, @Body() data: UpdateTaskDto) {
-    return this.service.update(req.user.sub, id, data);
+  update(
+    @CurrentUser('id') userId: string,
+    @Param('id') id: string,
+    @Body() dto: UpdateTaskDto,
+  ) {
+    return this.tasksService.update(userId, id, dto);
   }
 
   @Delete(':id')
-  delete(@Req() req: Request, @Param('id') id: string) {
-    return this.service.delete(req.user.sub, id);
+  remove(@CurrentUser('id') userId: string, @Param('id') id: string) {
+    return this.tasksService.delete(userId, id);
   }
 }
