@@ -13,9 +13,6 @@ export class AuthService {
     private readonly jwt: JwtService,
   ) {}
 
-  // -----------------------------
-  // 1. REGISTRO
-  // -----------------------------
   async register(data: RegisterDto) {
     const { email, password, phone, name } = data;
 
@@ -49,9 +46,6 @@ export class AuthService {
     };
   }
 
-  // -----------------------------
-  // 2. LOGIN (gera código MFA)
-  // -----------------------------
   async login(data: LoginDto) {
     const { email, password } = data;
 
@@ -69,7 +63,6 @@ export class AuthService {
       throw new UnauthorizedException('Credenciais inválidas.');
     }
 
-    // Gerar código MFA (6 dígitos)
     const code = Math.floor(100000 + Math.random() * 900000).toString();
 
     await this.prisma.user.update({
@@ -80,7 +73,6 @@ export class AuthService {
       },
     });
 
-    // Aqui futuramente enviaremos o e-mail
     console.log('Código MFA (simulação):', code);
 
     return {
@@ -88,9 +80,6 @@ export class AuthService {
     };
   }
 
-  // -----------------------------
-  // 3. VERIFICAÇÃO DO MFA
-  // -----------------------------
   async verifyMfa(data: VerifyMfaDto) {
     const { email, code } = data;
 
@@ -118,11 +107,9 @@ export class AuthService {
       data: {
         mfaCode: null,
         mfaExpiresAt: null,
-        mfaEnabled: true,
       },
     });
 
-    // Gerar JWT
     const token = await this.jwt.signAsync({
       sub: user.id,
       email: user.email,

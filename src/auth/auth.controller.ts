@@ -2,7 +2,6 @@ import {
   Body,
   Controller,
   Post,
-  UseGuards,
   Req,
   Get,
 } from '@nestjs/common';
@@ -10,7 +9,6 @@ import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { VerifyMfaDto } from './dto/verify-mfa.dto';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { Request } from 'express';
 import { ApiBody, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { Public } from '../common/decorators/public.decorator';
@@ -20,7 +18,6 @@ import { Public } from '../common/decorators/public.decorator';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  // ⭐ ROTAS PÚBLICAS
   @Public()
   @Post('register')
   @ApiBody({ type: RegisterDto })
@@ -42,9 +39,7 @@ export class AuthController {
     return this.authService.verifyMfa(data);
   }
 
-  // ⭐ ROTA PRIVADA
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
   @Get('me')
   getMe(@Req() req: Request) {
     return req.user;

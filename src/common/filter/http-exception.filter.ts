@@ -15,7 +15,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const request = ctx.getRequest<Request>();
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
-    let message = 'Internal server error';
+    let message: string | string[] = 'Internal server error';
     let details: string | undefined = undefined;
 
     if (exception instanceof HttpException) {
@@ -36,7 +36,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       error: {
         code: status,
         message,
-        details,
+        details: details ?? null,
         path: request.url,
       },
     });
