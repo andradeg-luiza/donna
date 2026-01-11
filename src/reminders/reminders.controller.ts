@@ -6,6 +6,7 @@ import {
   Req,
   Get,
   Patch,
+  Delete,
 } from '@nestjs/common';
 import { RemindersService } from './reminders.service';
 import { CreateReminderDto } from './dto/create-reminder.dto';
@@ -53,5 +54,14 @@ export class RemindersController {
     @Body() data: UpdateReminderDto,
   ) {
     return this.remindersService.update(req.user.id, taskId, id, data);
+  }
+
+  @Delete(':id')
+  delete(
+    @Req() req: Request,
+    @Param('taskId') taskId: string,
+    @Param('id') id: string,
+  ) {
+    return this.remindersService.delete(req.user.id, taskId, id);
   }
 }

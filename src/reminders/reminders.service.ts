@@ -70,4 +70,20 @@ export class RemindersService {
       },
     });
   }
+
+  async delete(userId: string, taskId: string, id: string) {
+    const reminder = await this.prisma.reminder.findFirst({
+      where: { id, taskId, userId },
+    });
+
+    if (!reminder) {
+      throw new NotFoundException('Lembrete não encontrado.');
+    }
+
+    await this.prisma.reminder.delete({
+      where: { id },
+    });
+
+    return { message: 'Lembrete removido com sucesso.' };
+  }
 }
