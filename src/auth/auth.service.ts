@@ -69,7 +69,7 @@ export class AuthService {
       where: { id: user.id },
       data: {
         mfaCode: code,
-        mfaExpiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutos
+        mfaExpiresAt: new Date(Date.now() + 10 * 60 * 1000),
       },
     });
 

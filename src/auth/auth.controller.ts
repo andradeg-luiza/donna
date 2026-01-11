@@ -39,7 +39,7 @@ export class AuthController {
     return this.authService.verifyMfa(data);
   }
 
-  @ApiBearerAuth()
+  @ApiBearerAuth('bearer')
   @Get('me')
   getMe(@Req() req: Request) {
     return req.user;

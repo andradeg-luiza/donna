@@ -6,11 +6,11 @@ import { Prisma } from '@prisma/client';
 export class TasksRepository {
   constructor(private prisma: PrismaService) {}
 
-  create(userId: string, data: Omit<Prisma.TaskCreateInput, 'user'>) {
+  create(userId: string, data: Prisma.TaskUncheckedCreateInput) {
     return this.prisma.task.create({
       data: {
         ...data,
-        user: { connect: { id: userId } },
+        userId,
       },
     });
   }
@@ -28,7 +28,6 @@ export class TasksRepository {
   findOne(userId: string, id: string) {
     return this.prisma.task.findFirst({
       where: { id, userId },
-      include: { items: true },
     });
   }
 
@@ -42,12 +41,6 @@ export class TasksRepository {
   delete(userId: string, id: string) {
     return this.prisma.task.deleteMany({
       where: { id, userId },
-    });
-  }
-
-  findById(id: string) {
-    return this.prisma.task.findUnique({
-      where: { id },
     });
   }
 }

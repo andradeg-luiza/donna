@@ -22,6 +22,8 @@ export class TasksService {
     return this.repo.create(userId, {
       ...data,
       category,
+      priority: data.priority ?? null,
+      userId, // <-- ESSENCIAL PARA TaskUncheckedCreateInput
     });
   }
 

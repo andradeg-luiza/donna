@@ -7,6 +7,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
 model User {
   id            String    @id @default(uuid())
   phone         String    @unique
@@ -23,14 +29,15 @@ model User {
 }
 
 model Task {
-  id          String     @id @default(uuid())
+  id          String        @id @default(uuid())
   title       String
   description String?
-  done        Boolean    @default(false)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  done        Boolean       @default(false)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 
   category    String?
+  priority    TaskPriority?
 
   userId String
   user   User       @relation(fields: [userId], references: [id])

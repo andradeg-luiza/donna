@@ -13,7 +13,15 @@ async function bootstrap() {
       'Documentação da API — <a href="/api-json" target="_blank">Abrir JSON</a>',
     )
     .setVersion('1.0')
-    .addBearerAuth()
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        in: 'header',
+      },
+      'bearer',
+    )
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
@@ -29,9 +37,7 @@ async function bootstrap() {
   );
 
   const reflector = app.get(Reflector);
-
   app.useGlobalInterceptors(new ClassSerializerInterceptor(reflector));
-
   app.useGlobalFilters(new HttpExceptionFilter());
 
   await app.listen(3000);
