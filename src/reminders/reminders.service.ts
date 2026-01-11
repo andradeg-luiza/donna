@@ -39,4 +39,16 @@ export class RemindersService {
       orderBy: { remindAt: 'asc' },
     });
   }
+
+  async findOne(userId: string, taskId: string, id: string) {
+    const reminder = await this.prisma.reminder.findFirst({
+      where: { id, taskId, userId },
+    });
+
+    if (!reminder) {
+      throw new NotFoundException('Lembrete não encontrado.');
+    }
+
+    return reminder;
+  }
 }

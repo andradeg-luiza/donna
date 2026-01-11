@@ -26,4 +26,13 @@ export class RemindersController {
   ) {
     return this.remindersService.findAllByTask(req.user.id, taskId);
   }
+
+  @Get(':id')
+  findOne(
+    @Req() req: Request,
+    @Param('taskId') taskId: string,
+    @Param('id') id: string,
+  ) {
+    return this.remindersService.findOne(req.user.id, taskId, id);
+  }
 }
