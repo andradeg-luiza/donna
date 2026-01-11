@@ -7,19 +7,26 @@ import { UpdateReminderDto } from './dto/update-reminder.dto';
 export class RemindersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(userId: string, taskId: string, data: CreateReminderDto) {
+  async create(userId: string, referenceId: string, data: CreateReminderDto) {
+    // tenta achar uma task
     const task = await this.prisma.task.findFirst({
-      where: { id: taskId, userId },
+      where: { id: referenceId, userId },
     });
 
-    if (!task) {
-      throw new NotFoundException('Task não encontrada.');
+    // tenta achar um appointment
+    const appointment = await this.prisma.appointment.findFirst({
+      where: { id: referenceId, userId },
+    });
+
+    if (!task && !appointment) {
+      throw new NotFoundException('Task ou Appointment não encontrado.');
     }
 
     return this.prisma.reminder.create({
       data: {
         userId,
-        taskId,
+        taskId: task ? referenceId : null,
+        appointmentId: appointment ? referenceId : null,
         remindAt: new Date(data.remindAt),
         message: data.message ?? null,
       },
@@ -41,9 +48,16 @@ export class RemindersService {
     });
   }
 
-  async findOne(userId: string, taskId: string, id: string) {
+  async findOne(userId: string, referenceId: string, id: string) {
     const reminder = await this.prisma.reminder.findFirst({
-      where: { id, taskId, userId },
+      where: {
+        id,
+        userId,
+        OR: [
+          { taskId: referenceId },
+          { appointmentId: referenceId },
+        ],
+      },
     });
 
     if (!reminder) {
@@ -55,12 +69,19 @@ export class RemindersService {
 
   async update(
     userId: string,
-    taskId: string,
+    referenceId: string,
     id: string,
     data: UpdateReminderDto,
   ) {
     const reminder = await this.prisma.reminder.findFirst({
-      where: { id, taskId, userId },
+      where: {
+        id,
+        userId,
+        OR: [
+          { taskId: referenceId },
+          { appointmentId: referenceId },
+        ],
+      },
     });
 
     if (!reminder) {
@@ -76,9 +97,16 @@ export class RemindersService {
     });
   }
 
-  async delete(userId: string, taskId: string, id: string) {
+  async delete(userId: string, referenceId: string, id: string) {
     const reminder = await this.prisma.reminder.findFirst({
-      where: { id, taskId, userId },
+      where: {
+        id,
+        userId,
+        OR: [
+          { taskId: referenceId },
+          { appointmentId: referenceId },
+        ],
+      },
     });
 
     if (!reminder) {
@@ -100,9 +128,7 @@ export class RemindersService {
       },
     });
 
-    if (pending.length === 0) {
-      return;
-    }
+    if (pending.length === 0) return;
 
     await this.prisma.reminder.updateMany({
       where: {
