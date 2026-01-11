@@ -24,4 +24,19 @@ export class RemindersService {
       },
     });
   }
+
+  async findAllByTask(userId: string, taskId: string) {
+    const task = await this.prisma.task.findFirst({
+      where: { id: taskId, userId },
+    });
+
+    if (!task) {
+      throw new NotFoundException('Task não encontrada.');
+    }
+
+    return this.prisma.reminder.findMany({
+      where: { taskId },
+      orderBy: { remindAt: 'asc' },
+    });
+  }
 }
