@@ -5,7 +5,7 @@ import { UpdateReminderDto } from './dto/update-reminder.dto';
 
 @Injectable()
 export class RemindersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async create(userId: string, taskId: string, data: CreateReminderDto) {
     const task = await this.prisma.task.findFirst({
@@ -53,7 +53,12 @@ export class RemindersService {
     return reminder;
   }
 
-  async update(userId: string, taskId: string, id: string, data: UpdateReminderDto) {
+  async update(
+    userId: string,
+    taskId: string,
+    id: string,
+    data: UpdateReminderDto,
+  ) {
     const reminder = await this.prisma.reminder.findFirst({
       where: { id, taskId, userId },
     });
@@ -85,5 +90,26 @@ export class RemindersService {
     });
 
     return { message: 'Lembrete removido com sucesso.' };
+  }
+
+  async findPending() {
+    const now = new Date();
+
+    return this.prisma.reminder.findMany({
+      where: {
+        sent: false,
+        remindAt: { lte: now },
+      },
+    });
+  }
+
+  async markAsSent(id: string) {
+    return this.prisma.reminder.update({
+      where: { id },
+      data: {
+        sent: true,
+        sentAt: new Date(),
+      },
+    });
   }
 }
