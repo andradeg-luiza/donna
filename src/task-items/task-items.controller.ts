@@ -24,7 +24,7 @@ export class TaskItemsController {
 
   @Post()
   create(
-    @CurrentUser('sub') userId: string,
+    @CurrentUser('id') userId: string,
     @Param('taskId') taskId: string,
     @Body() dto: CreateTaskItemDto,
   ) {
@@ -33,7 +33,7 @@ export class TaskItemsController {
 
   @Get()
   findAll(
-    @CurrentUser('sub') userId: string,
+    @CurrentUser('id') userId: string,
     @Param('taskId') taskId: string,
   ) {
     return this.taskItemsService.findAll(userId, taskId);
@@ -41,7 +41,7 @@ export class TaskItemsController {
 
   @Patch(':itemId')
   update(
-    @CurrentUser('sub') userId: string,
+    @CurrentUser('id') userId: string,
     @Param('taskId') taskId: string,
     @Param('itemId') itemId: string,
     @Body() dto: UpdateTaskItemDto,
@@ -51,7 +51,7 @@ export class TaskItemsController {
 
   @Delete(':itemId')
   delete(
-    @CurrentUser('sub') userId: string,
+    @CurrentUser('id') userId: string,
     @Param('taskId') taskId: string,
     @Param('itemId') itemId: string,
   ) {
@@ -60,7 +60,7 @@ export class TaskItemsController {
 
   @Patch(':itemId/toggle')
   toggle(
-    @CurrentUser('sub') userId: string,
+    @CurrentUser('id') userId: string,
     @Param('taskId') taskId: string,
     @Param('itemId') itemId: string,
   ) {
