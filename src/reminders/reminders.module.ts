@@ -8,5 +8,6 @@ import { RemindersCron } from './reminders.cron';
   imports: [PrismaModule],
   controllers: [RemindersController],
   providers: [RemindersService, RemindersCron],
+  exports: [RemindersService],
 })
 export class RemindersModule {}

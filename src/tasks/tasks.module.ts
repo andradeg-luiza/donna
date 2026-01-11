@@ -1,14 +1,12 @@
 import { Module } from '@nestjs/common';
 import { TasksService } from './tasks.service';
-import { TasksRepository } from './tasks.repository';
 import { TasksController } from './tasks.controller';
 import { PrismaModule } from '../prisma/prisma.module';
-import { CategorySuggestionService } from './category-suggestion.service';
+import { RemindersModule } from '../reminders/reminders.module';
 
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, RemindersModule],
   controllers: [TasksController],
-  providers: [TasksService, TasksRepository, CategorySuggestionService],
-  exports: [TasksService],
+  providers: [TasksService],
 })
 export class TasksModule {}

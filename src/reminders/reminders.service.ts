@@ -92,6 +92,30 @@ export class RemindersService {
     return { message: 'Lembrete removido com sucesso.' };
   }
 
+  async cancelByTaskId(taskId: string) {
+    const pending = await this.prisma.reminder.findMany({
+      where: {
+        taskId,
+        sent: false,
+      },
+    });
+
+    if (pending.length === 0) {
+      return;
+    }
+
+    await this.prisma.reminder.updateMany({
+      where: {
+        taskId,
+        sent: false,
+      },
+      data: {
+        sent: true,
+        sentAt: new Date(),
+      },
+    });
+  }
+
   async findPending() {
     const now = new Date();
 

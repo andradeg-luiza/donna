@@ -1,33 +1,9 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, MinLength, IsEnum } from 'class-validator';
-import { TaskPriority } from '@prisma/client';
+import { PartialType } from '@nestjs/mapped-types';
+import { CreateTaskDto } from './create-task.dto';
+import { IsBoolean, IsOptional } from 'class-validator';
 
-export class UpdateTaskDto {
-  @ApiPropertyOptional({ example: 'Comprar pão integral' })
+export class UpdateTaskDto extends PartialType(CreateTaskDto) {
   @IsOptional()
-  @IsString()
-  @MinLength(1)
-  title?: string;
-
-  @ApiPropertyOptional({ example: 'Pão integral na padaria' })
-  @IsOptional()
-  @IsString()
-  description?: string;
-
-  @ApiPropertyOptional({
-    example: 'HIGH',
-    enum: TaskPriority,
-    description: 'Prioridade da tarefa.',
-  })
-  @IsOptional()
-  @IsEnum(TaskPriority)
-  priority?: TaskPriority;
-
-  @ApiPropertyOptional({
-    example: 'Compras',
-    description: 'Categoria da task.',
-  })
-  @IsOptional()
-  @IsString()
-  category?: string;
+  @IsBoolean()
+  done?: boolean;
 }
