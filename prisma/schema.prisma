@@ -14,18 +14,19 @@ enum TaskPriority {
 }
 
 model User {
-  id            String    @id @default(uuid())
-  phone         String    @unique
-  email         String    @unique
+  id            String      @id @default(uuid())
+  phone         String      @unique
+  email         String      @unique
   passwordHash  String
   name          String?
-  mfaEnabled    Boolean   @default(false)
+  mfaEnabled    Boolean     @default(false)
   mfaCode       String?
   mfaExpiresAt  DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 
   tasks         Task[]
+  reminders     Reminder[]   // <--- ADICIONADO
 }
 
 model Task {
@@ -39,10 +40,11 @@ model Task {
   category    String?
   priority    TaskPriority?
 
-  userId String
-  user   User       @relation(fields: [userId], references: [id])
+  userId      String
+  user        User          @relation(fields: [userId], references: [id])
 
-  items  TaskItem[]
+  items       TaskItem[]
+  reminders   Reminder[]     // <--- ADICIONADO
 }
 
 model TaskItem {
@@ -52,6 +54,24 @@ model TaskItem {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  taskId String
-  task   Task    @relation(fields: [taskId], references: [id])
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id])
+}
+
+model Reminder {
+  id        String   @id @default(uuid())
+
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id])
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
+  remindAt  DateTime
+  message   String?
+
+  sent      Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
