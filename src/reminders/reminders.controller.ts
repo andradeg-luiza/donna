@@ -1,6 +1,15 @@
-import { Controller, Post, Body, Param, Req, Get } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Param,
+  Req,
+  Get,
+  Patch,
+} from '@nestjs/common';
 import { RemindersService } from './reminders.service';
 import { CreateReminderDto } from './dto/create-reminder.dto';
+import { UpdateReminderDto } from './dto/update-reminder.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
 
@@ -34,5 +43,15 @@ export class RemindersController {
     @Param('id') id: string,
   ) {
     return this.remindersService.findOne(req.user.id, taskId, id);
+  }
+
+  @Patch(':id')
+  update(
+    @Req() req: Request,
+    @Param('taskId') taskId: string,
+    @Param('id') id: string,
+    @Body() data: UpdateReminderDto,
+  ) {
+    return this.remindersService.update(req.user.id, taskId, id, data);
   }
 }

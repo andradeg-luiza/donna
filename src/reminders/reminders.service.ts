@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateReminderDto } from './dto/create-reminder.dto';
+import { UpdateReminderDto } from './dto/update-reminder.dto';
 
 @Injectable()
 export class RemindersService {
@@ -50,5 +51,23 @@ export class RemindersService {
     }
 
     return reminder;
+  }
+
+  async update(userId: string, taskId: string, id: string, data: UpdateReminderDto) {
+    const reminder = await this.prisma.reminder.findFirst({
+      where: { id, taskId, userId },
+    });
+
+    if (!reminder) {
+      throw new NotFoundException('Lembrete não encontrado.');
+    }
+
+    return this.prisma.reminder.update({
+      where: { id },
+      data: {
+        remindAt: data.remindAt ? new Date(data.remindAt) : reminder.remindAt,
+        message: data.message ?? reminder.message,
+      },
+    });
   }
 }
