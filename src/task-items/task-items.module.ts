@@ -1,15 +1,11 @@
 import { Module } from '@nestjs/common';
-import { TaskItemsService } from './task-items.service';
+import { PrismaModule } from '../prisma/prisma.module';
 import { TaskItemsController } from './task-items.controller';
-import { PrismaService } from '../prisma/prisma.service';
-import { ActionLoggerService } from '../common/logging/action-logger.service';
+import { TaskItemsService } from './task-items.service';
 
 @Module({
+  imports: [PrismaModule],
   controllers: [TaskItemsController],
-  providers: [
-    TaskItemsService,
-    PrismaService,
-    ActionLoggerService,
-  ],
+  providers: [TaskItemsService],
 })
 export class TaskItemsModule {}

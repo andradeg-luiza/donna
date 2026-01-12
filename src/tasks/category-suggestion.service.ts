@@ -1,20 +1,10 @@
 import { Injectable } from '@nestjs/common';
-
-export enum TaskCategory {
-  Compras = 'Compras',
-  Trabalho = 'Trabalho',
-  Estudos = 'Estudos',
-  Saúde = 'Saúde',
-  Financeiro = 'Financeiro',
-  Casa = 'Casa',
-  Pessoal = 'Pessoal',
-  Outros = 'Outros',
-}
+import { TaskCategory } from '@prisma/client';
 
 @Injectable()
 export class CategorySuggestionService {
-  suggestCategory(text: string): TaskCategory {
-    const normalized = text.toLowerCase();
+  async suggestCategory(title: string): Promise<TaskCategory> {
+    const normalized = title.toLowerCase();
 
     if (normalized.match(/comprar|mercado|lista|supermercado|compra/)) {
       return TaskCategory.Compras;
@@ -29,7 +19,7 @@ export class CategorySuggestionService {
     }
 
     if (normalized.match(/médico|consulta|remédio|saúde|exame/)) {
-      return TaskCategory.Saúde;
+      return TaskCategory.Saude;
     }
 
     if (normalized.match(/pagar|conta|boleto|fatura|dinheiro/)) {

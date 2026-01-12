@@ -1,18 +1,17 @@
 import {
+  Body,
   Controller,
   Get,
   Post,
-  Body,
   Patch,
-  Param,
   Delete,
-  Req,
+  Param,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { Request } from 'express';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
 @ApiTags('Tasks')
 @ApiBearerAuth('bearer')
@@ -21,27 +20,31 @@ export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
   @Post()
-  create(@Req() req: Request, @Body() data: CreateTaskDto) {
-    return this.tasksService.create(req.user.id, data);
+  create(@CurrentUser() user: any, @Body() data: CreateTaskDto) {
+    return this.tasksService.create(user.id, data);
   }
 
   @Get()
-  findAll(@Req() req: Request) {
-    return this.tasksService.findAll(req.user.id);
+  findAll(@CurrentUser() user: any) {
+    return this.tasksService.findAll(user.id);
   }
 
   @Get(':id')
-  findOne(@Req() req: Request, @Param('id') id: string) {
-    return this.tasksService.findOne(req.user.id, id);
+  findOne(@CurrentUser() user: any, @Param('id') id: string) {
+    return this.tasksService.findOne(user.id, id);
   }
 
   @Patch(':id')
-  update(@Req() req: Request, @Param('id') id: string, @Body() data: UpdateTaskDto) {
-    return this.tasksService.update(req.user.id, id, data);
+  update(
+    @CurrentUser() user: any,
+    @Param('id') id: string,
+    @Body() data: UpdateTaskDto,
+  ) {
+    return this.tasksService.update(user.id, id, data);
   }
 
   @Delete(':id')
-  remove(@Req() req: Request, @Param('id') id: string) {
-    return this.tasksService.delete(req.user.id, id);
+  remove(@CurrentUser() user: any, @Param('id') id: string) {
+    return this.tasksService.remove(user.id, id);
   }
 }

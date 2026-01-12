@@ -10,7 +10,7 @@ export class LoginDto {
   email!: string;
 
   @ApiProperty({
-    description: 'Senha do usuário',
+    description: 'Senha do usuário (mínimo 6 caracteres)',
     example: '123456',
   })
   @IsString()

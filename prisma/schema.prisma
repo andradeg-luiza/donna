@@ -13,6 +13,17 @@ enum TaskPriority {
   HIGH
 }
 
+enum TaskCategory {
+  Compras
+  Trabalho
+  Estudos
+  Saude
+  Financeiro
+  Casa
+  Pessoal
+  Outros
+}
+
 model User {
   id           String    @id @default(uuid())
   phone        String    @unique
@@ -28,26 +39,32 @@ model User {
   tasks        Task[]
   reminders    Reminder[]
   appointments Appointment[]
-
   actions      UserAction[]
+
+  @@index([email])
+  @@index([phone])
 }
 
 model Task {
-  id          String   @id @default(uuid())
+  id          String        @id @default(uuid())
   title       String
   description String?
-  done        Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  done        Boolean       @default(false)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 
-  category String?
-  priority TaskPriority?
+  category    TaskCategory?
+  priority    TaskPriority?
 
   userId String
-  user   User   @relation(fields: [userId], references: [id])
+  user   User          @relation(fields: [userId], references: [id])
 
   items     TaskItem[]
   reminders Reminder[]
+
+  @@index([userId])
+  @@index([category])
+  @@index([priority])
 }
 
 model TaskItem {
@@ -59,6 +76,8 @@ model TaskItem {
 
   taskId String
   task   Task   @relation(fields: [taskId], references: [id])
+
+  @@index([taskId])
 }
 
 model Appointment {
@@ -71,16 +90,19 @@ model Appointment {
 
   user      User       @relation(fields: [userId], references: [id])
   reminders Reminder[]
+
+  @@index([userId])
+  @@index([scheduledAt])
 }
 
 model Reminder {
   id String @id @default(uuid())
 
-  taskId String?
-  task   Task?   @relation(fields: [taskId], references: [id])
+  taskId        String?
+  task          Task?         @relation(fields: [taskId], references: [id])
 
   appointmentId String?
-  appointment   Appointment? @relation(fields: [appointmentId], references: [id])
+  appointment   Appointment?  @relation(fields: [appointmentId], references: [id])
 
   userId String
   user   User   @relation(fields: [userId], references: [id])
@@ -93,6 +115,12 @@ model Reminder {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([taskId])
+  @@index([appointmentId])
+  @@index([remindAt])
+  @@index([sent])
 }
 
 model UserAction {
@@ -103,4 +131,7 @@ model UserAction {
   action    String
   payload   Json
   createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
 }

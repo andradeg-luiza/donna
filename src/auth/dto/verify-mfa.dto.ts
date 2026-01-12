@@ -10,7 +10,7 @@ export class VerifyMfaDto {
   email!: string;
 
   @ApiProperty({
-    description: 'Código MFA enviado ao usuário',
+    description: 'Código MFA enviado ao usuário (6 dígitos)',
     example: '123456',
   })
   @IsString()

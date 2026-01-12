@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { FilterHistoryDto } from './dto/filter-history.dto';
+import { FilterHistoryDto } from './dto/filter-user-action.dto';
 import {
   HistoryPeriod,
   HistoryStatus,
-} from './dto/history.enums';
+} from './dto/user-action.enums';
 
 @Injectable()
 export class HistoryService {

@@ -1,10 +1,10 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { VerifyMfaDto } from './dto/verify-mfa.dto';
-import * as bcrypt from 'bcrypt';
-import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
@@ -13,110 +13,124 @@ export class AuthService {
     private readonly jwt: JwtService,
   ) {}
 
+  // -----------------------------------------------------
+  // REGISTER
+  // -----------------------------------------------------
   async register(data: RegisterDto) {
-    const { email, password, phone, name } = data;
-
     const existing = await this.prisma.user.findUnique({
-      where: { email },
+      where: { email: data.email },
     });
 
     if (existing) {
       throw new BadRequestException('E-mail já está em uso.');
     }
 
-    const passwordHash = await bcrypt.hash(password, 10);
+    const hashed = await bcrypt.hash(data.password, 10);
 
     const user = await this.prisma.user.create({
       data: {
-        email,
-        passwordHash,
-        phone,
-        name,
+        email: data.email,
+        passwordHash: hashed,
+        phone: data.phone,
+        mfaEnabled: true,
       },
     });
 
     return {
       message: 'Usuário registrado com sucesso.',
-      user: {
-        id: user.id,
-        email: user.email,
-        phone: user.phone,
-        name: user.name,
-      },
+      userId: user.id,
     };
   }
 
+  // -----------------------------------------------------
+  // LOGIN
+  // -----------------------------------------------------
   async login(data: LoginDto) {
-    const { email, password } = data;
-
     const user = await this.prisma.user.findUnique({
-      where: { email },
+      where: { email: data.email },
     });
 
     if (!user) {
       throw new UnauthorizedException('Credenciais inválidas.');
     }
 
-    const valid = await bcrypt.compare(password, user.passwordHash);
+    const valid = await bcrypt.compare(data.password, user.passwordHash);
 
     if (!valid) {
       throw new UnauthorizedException('Credenciais inválidas.');
     }
 
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    if (user.mfaEnabled) {
+      const code = this.generateMfaCode();
+
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: {
+          mfaCode: code,
+          mfaExpiresAt: this.mfaExpiration(),
+        },
+      });
+
+      return {
+        mfaRequired: true,
+        message: 'Código MFA enviado.',
+      };
+    }
+
+    return this.generateTokens(user.id, user.email);
+  }
+
+  // -----------------------------------------------------
+  // VERIFY MFA
+  // -----------------------------------------------------
+  async verifyMfa(data: VerifyMfaDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { email: data.email },
+    });
+
+    if (!user || !user.mfaEnabled) {
+      throw new UnauthorizedException('MFA inválido.');
+    }
+
+    if (!user.mfaCode || !user.mfaExpiresAt) {
+      throw new UnauthorizedException('Nenhum código MFA ativo.');
+    }
+
+    const now = new Date();
+    if (now > user.mfaExpiresAt) {
+      throw new UnauthorizedException('Código MFA expirado.');
+    }
+
+    if (data.code !== user.mfaCode) {
+      throw new UnauthorizedException('Código MFA incorreto.');
+    }
 
     await this.prisma.user.update({
       where: { id: user.id },
-      data: {
-        mfaCode: code,
-        mfaExpiresAt: new Date(Date.now() + 10 * 60 * 1000),
-      },
+      data: { mfaCode: null, mfaExpiresAt: null },
     });
 
-    console.log('Código MFA (simulação):', code);
+    return this.generateTokens(user.id, user.email);
+  }
+
+  // -----------------------------------------------------
+  // HELPERS
+  // -----------------------------------------------------
+  private generateTokens(userId: string, email: string) {
+    const payload = { sub: userId, email };
 
     return {
-      message: 'Código MFA enviado para o e-mail.',
+      accessToken: this.jwt.sign(payload),
     };
   }
 
-  async verifyMfa(data: VerifyMfaDto) {
-    const { email, code } = data;
+  private generateMfaCode(): string {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  }
 
-    const user = await this.prisma.user.findUnique({
-      where: { email },
-    });
-
-    if (!user || !user.mfaCode || !user.mfaExpiresAt) {
-      throw new UnauthorizedException('Código inválido.');
-    }
-
-    const expired = user.mfaExpiresAt.getTime() < Date.now();
-
-    if (expired) {
-      throw new UnauthorizedException('Código expirado.');
-    }
-
-    if (user.mfaCode !== code) {
-      throw new UnauthorizedException('Código inválido.');
-    }
-
-    await this.prisma.user.update({
-      where: { id: user.id },
-      data: {
-        mfaCode: null,
-        mfaExpiresAt: null,
-      },
-    });
-
-    const token = await this.jwt.signAsync({
-      sub: user.id,
-      email: user.email,
-    });
-
-    return {
-      message: 'Autenticação concluída.',
-      token,
-    };
+  private mfaExpiration(): Date {
+    const expires = new Date();
+    expires.setMinutes(expires.getMinutes() + 5);
+    return expires;
   }
 }

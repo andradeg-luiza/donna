@@ -1,16 +1,11 @@
-import {
-  Body,
-  Controller,
-  Post,
-  Req,
-  Get,
-} from '@nestjs/common';
+import { Body, Controller, Post, Get, Req } from '@nestjs/common';
+import { ApiBody, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { Request } from 'express';
+
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { VerifyMfaDto } from './dto/verify-mfa.dto';
-import { Request } from 'express';
-import { ApiBody, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { Public } from '../common/decorators/public.decorator';
 
 @ApiTags('Auth')
@@ -21,21 +16,21 @@ export class AuthController {
   @Public()
   @Post('register')
   @ApiBody({ type: RegisterDto })
-  async register(@Body() data: RegisterDto) {
+  register(@Body() data: RegisterDto) {
     return this.authService.register(data);
   }
 
   @Public()
   @Post('login')
   @ApiBody({ type: LoginDto })
-  async login(@Body() data: LoginDto) {
+  login(@Body() data: LoginDto) {
     return this.authService.login(data);
   }
 
   @Public()
   @Post('mfa/verify')
   @ApiBody({ type: VerifyMfaDto })
-  async verifyMfa(@Body() data: VerifyMfaDto) {
+  verifyMfa(@Body() data: VerifyMfaDto) {
     return this.authService.verifyMfa(data);
   }
 

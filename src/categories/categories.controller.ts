@@ -1,6 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { TaskCategory } from '../tasks/category-suggestion.service';
+import { TaskCategory } from '@prisma/client';
 
 @ApiTags('Categories')
 @Controller('categories')

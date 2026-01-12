@@ -1,15 +1,11 @@
 import { Module } from '@nestjs/common';
-import { AppointmentsService } from './appointments.service';
+import { PrismaModule } from '../prisma/prisma.module';
 import { AppointmentsController } from './appointments.controller';
-import { PrismaService } from '../prisma/prisma.service';
-import { ActionLoggerService } from '../common/logging/action-logger.service';
+import { AppointmentsService } from './appointments.service';
 
 @Module({
+  imports: [PrismaModule],
   controllers: [AppointmentsController],
-  providers: [
-    AppointmentsService,
-    PrismaService,
-    ActionLoggerService,
-  ],
+  providers: [AppointmentsService],
 })
 export class AppointmentsModule {}

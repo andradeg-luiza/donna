@@ -1,38 +1,37 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { CategorySuggestionService } from './category-suggestion.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
-import { RemindersService } from '../reminders/reminders.service';
-import { ActionLoggerService } from '../common/logging/action-logger.service';
 
 @Injectable()
 export class TasksService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly remindersService: RemindersService,
-    private readonly actionLogger: ActionLoggerService,
+    private readonly categorySuggestion: CategorySuggestionService,
   ) {}
 
+  // -----------------------------------------------------
+  // CREATE
+  // -----------------------------------------------------
   async create(userId: string, data: CreateTaskDto) {
-    const task = await this.prisma.task.create({
+    const category =
+      data.category ||
+      (await this.categorySuggestion.suggestCategory(data.title));
+
+    return this.prisma.task.create({
       data: {
-        userId,
         title: data.title,
-        description: data.description ?? null,
-        category: data.category ?? null,
-        priority: data.priority ?? null,
+        description: data.description,
+        category,
+        userId,
       },
     });
-
-    // 🔵 Registrar ação no histórico
-    await this.actionLogger.log(userId, 'task.created', {
-      taskId: task.id,
-      title: task.title,
-    });
-
-    return task;
   }
 
+  // -----------------------------------------------------
+  // FIND ALL
+  // -----------------------------------------------------
   async findAll(userId: string) {
     return this.prisma.task.findMany({
       where: { userId },
@@ -40,9 +39,12 @@ export class TasksService {
     });
   }
 
-  async findOne(userId: string, id: string) {
+  // -----------------------------------------------------
+  // FIND ONE
+  // -----------------------------------------------------
+  async findOne(userId: string, taskId: string) {
     const task = await this.prisma.task.findFirst({
-      where: { id, userId },
+      where: { id: taskId, userId },
     });
 
     if (!task) {
@@ -52,47 +54,35 @@ export class TasksService {
     return task;
   }
 
-  async update(userId: string, id: string, data: UpdateTaskDto) {
-    const task = await this.prisma.task.findFirst({
-      where: { id, userId },
-    });
+  // -----------------------------------------------------
+  // UPDATE
+  // -----------------------------------------------------
+  async update(userId: string, taskId: string, data: UpdateTaskDto) {
+    const task = await this.findOne(userId, taskId);
 
-    if (!task) {
-      throw new NotFoundException('Task não encontrada.');
-    }
+    const category =
+      data.category ||
+      (data.title
+        ? await this.categorySuggestion.suggestCategory(data.title)
+        : task.category);
 
-    const wasDone = task.done;
-    const willBeDone = data.done;
-
-    const updated = await this.prisma.task.update({
-      where: { id },
+    return this.prisma.task.update({
+      where: { id: taskId },
       data: {
-        title: data.title ?? task.title,
-        description: data.description ?? task.description,
-        category: data.category ?? task.category,
-        priority: data.priority ?? task.priority,
-        done: typeof data.done === 'boolean' ? data.done : task.done,
+        ...data,
+        category,
       },
     });
-
-    if (wasDone === false && willBeDone === true) {
-      await this.remindersService.cancelByTaskId(id);
-    }
-
-    return updated;
   }
 
-  async delete(userId: string, id: string) {
-    const task = await this.prisma.task.findFirst({
-      where: { id, userId },
-    });
-
-    if (!task) {
-      throw new NotFoundException('Task não encontrada.');
-    }
+  // -----------------------------------------------------
+  // REMOVE
+  // -----------------------------------------------------
+  async remove(userId: string, taskId: string) {
+    await this.findOne(userId, taskId);
 
     await this.prisma.task.delete({
-      where: { id },
+      where: { id: taskId },
     });
 
     return { message: 'Task removida com sucesso.' };

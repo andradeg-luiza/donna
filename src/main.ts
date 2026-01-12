@@ -1,18 +1,25 @@
 import { NestFactory, Reflector } from '@nestjs/core';
-import { AppModule } from './app.module';
-import { ValidationPipe, ClassSerializerInterceptor } from '@nestjs/common';
+import {
+  ValidationPipe,
+  ClassSerializerInterceptor,
+} from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+
+import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filter/http-exception.filter';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    cors: true, // habilita CORS automaticamente
+  });
 
+  // Swagger
   const config = new DocumentBuilder()
-    .setTitle('API')
+    .setTitle('Donna API')
     .setDescription(
       'Documentação da API — <a href="/api-json" target="_blank">Abrir JSON</a>',
     )
-    .setVersion('1.0')
+    .setVersion('1.0.0')
     .addBearerAuth(
       {
         type: 'http',
@@ -27,6 +34,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
+  // Pipes globais
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -36,10 +44,18 @@ async function bootstrap() {
     }),
   );
 
+  // Interceptores globais
   const reflector = app.get(Reflector);
   app.useGlobalInterceptors(new ClassSerializerInterceptor(reflector));
+
+  // Filtros globais
   app.useGlobalFilters(new HttpExceptionFilter());
 
-  await app.listen(3000);
+  // Porta
+  const port = process.env.PORT || 3000;
+  await app.listen(port);
+
+  console.log(`Donna API rodando na porta ${port}`);
 }
+
 bootstrap();

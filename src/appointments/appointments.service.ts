@@ -2,34 +2,27 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
-import { ActionLoggerService } from '../common/logging/action-logger.service';
 
 @Injectable()
 export class AppointmentsService {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly actionLogger: ActionLoggerService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
+  // -----------------------------------------------------
+  // CREATE
+  // -----------------------------------------------------
   async create(userId: string, data: CreateAppointmentDto) {
-    const appointment = await this.prisma.appointment.create({
+    return this.prisma.appointment.create({
       data: {
-        userId,
         description: data.description,
         scheduledAt: data.scheduledAt,
+        userId,
       },
     });
-
-    // 🔵 Registrar ação no histórico
-    await this.actionLogger.log(userId, 'appointment.created', {
-      appointmentId: appointment.id,
-      description: appointment.description,
-      scheduledAt: appointment.scheduledAt,
-    });
-
-    return appointment;
   }
 
+  // -----------------------------------------------------
+  // FIND ALL
+  // -----------------------------------------------------
   async findAll(userId: string) {
     return this.prisma.appointment.findMany({
       where: { userId },
@@ -37,9 +30,12 @@ export class AppointmentsService {
     });
   }
 
-  async findOne(userId: string, id: string) {
+  // -----------------------------------------------------
+  // FIND ONE
+  // -----------------------------------------------------
+  async findOne(userId: string, appointmentId: string) {
     const appointment = await this.prisma.appointment.findFirst({
-      where: { id, userId },
+      where: { id: appointmentId, userId },
     });
 
     if (!appointment) {
@@ -49,35 +45,30 @@ export class AppointmentsService {
     return appointment;
   }
 
-  async update(userId: string, id: string, data: UpdateAppointmentDto) {
-    const appointment = await this.prisma.appointment.findFirst({
-      where: { id, userId },
-    });
-
-    if (!appointment) {
-      throw new NotFoundException('Compromisso não encontrado.');
-    }
+  // -----------------------------------------------------
+  // UPDATE
+  // -----------------------------------------------------
+  async update(
+    userId: string,
+    appointmentId: string,
+    data: UpdateAppointmentDto,
+  ) {
+    await this.findOne(userId, appointmentId);
 
     return this.prisma.appointment.update({
-      where: { id },
-      data: {
-        description: data.description ?? appointment.description,
-        scheduledAt: data.scheduledAt ?? appointment.scheduledAt,
-      },
+      where: { id: appointmentId },
+      data,
     });
   }
 
-  async delete(userId: string, id: string) {
-    const appointment = await this.prisma.appointment.findFirst({
-      where: { id, userId },
-    });
-
-    if (!appointment) {
-      throw new NotFoundException('Compromisso não encontrado.');
-    }
+  // -----------------------------------------------------
+  // REMOVE
+  // -----------------------------------------------------
+  async remove(userId: string, appointmentId: string) {
+    await this.findOne(userId, appointmentId);
 
     await this.prisma.appointment.delete({
-      where: { id },
+      where: { id: appointmentId },
     });
 
     return { message: 'Compromisso removido com sucesso.' };

@@ -10,17 +10,15 @@ import { Request, Response } from 'express';
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
-
-    console.error(exception);
-
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let message: string | string[] = 'Internal server error';
-    let details: string | undefined = undefined;
+    let details: string | null = null;
 
+    // HttpException (erros conhecidos)
     if (exception instanceof HttpException) {
       status = exception.getStatus();
       const res = exception.getResponse();
@@ -29,17 +27,32 @@ export class HttpExceptionFilter implements ExceptionFilter {
         message = res;
       } else if (typeof res === 'object' && res !== null) {
         const r: any = res;
-        message = r.message || message;
-        details = r.error || r.details;
+
+        // class-validator envia message como array
+        message = r.message ?? message;
+        details = r.error ?? r.details ?? null;
       }
     }
+
+    // Erros inesperados (ex: throw new Error())
+    else if (exception instanceof Error) {
+      message = exception.message;
+    }
+
+    // Log mais limpo e padronizado
+    console.error({
+      status,
+      message,
+      details,
+      stack: exception instanceof Error ? exception.stack : undefined,
+    });
 
     response.status(status).json({
       success: false,
       error: {
         code: status,
         message,
-        details: details ?? null,
+        details,
         path: request.url,
       },
     });

@@ -1,49 +1,45 @@
 import {
+  Body,
   Controller,
+  Get,
   Post,
   Patch,
   Delete,
   Param,
-  Body,
-  UseGuards,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { TaskItemsService } from './task-items.service';
 import { CreateTaskItemDto } from './dto/create-task-item.dto';
 import { UpdateTaskItemDto } from './dto/update-task-item.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
-import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 
 @ApiTags('Task Items')
-@ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
-@Controller('tasks/:taskId/items')
+@ApiBearerAuth('bearer')
+@Controller('task-items')
 export class TaskItemsController {
   constructor(private readonly taskItemsService: TaskItemsService) {}
 
   @Post()
-  create(
-    @CurrentUser('id') userId: string,
-    @Param('taskId') taskId: string,
-    @Body() dto: CreateTaskItemDto,
-  ) {
-    return this.taskItemsService.create(userId, taskId, dto);
+  create(@CurrentUser() user: any, @Body() data: CreateTaskItemDto) {
+    return this.taskItemsService.create(user.id, data);
   }
 
-  @Patch(':itemId')
+  @Get(':taskId')
+  findAll(@CurrentUser() user: any, @Param('taskId') taskId: string) {
+    return this.taskItemsService.findAll(user.id, taskId);
+  }
+
+  @Patch(':id')
   update(
-    @CurrentUser('id') userId: string,
-    @Param('itemId') itemId: string,
-    @Body() dto: UpdateTaskItemDto,
+    @CurrentUser() user: any,
+    @Param('id') id: string,
+    @Body() data: UpdateTaskItemDto,
   ) {
-    return this.taskItemsService.update(userId, itemId, dto);
+    return this.taskItemsService.update(user.id, id, data);
   }
 
-  @Delete(':itemId')
-  delete(
-    @CurrentUser('id') userId: string,
-    @Param('itemId') itemId: string,
-  ) {
-    return this.taskItemsService.delete(userId, itemId);
+  @Delete(':id')
+  remove(@CurrentUser() user: any, @Param('id') id: string) {
+    return this.taskItemsService.remove(user.id, id);
   }
 }

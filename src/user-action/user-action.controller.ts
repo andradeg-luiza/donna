@@ -5,8 +5,8 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { HistoryService } from './history.service';
-import { FilterHistoryDto } from './dto/filter-history.dto';
+import { HistoryService } from './user-action.service';
+import { FilterHistoryDto } from './dto/filter-user-action.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';

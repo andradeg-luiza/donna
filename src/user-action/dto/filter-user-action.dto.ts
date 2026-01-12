@@ -8,7 +8,7 @@ import {
   HistoryPeriod,
   HistoryStatus,
   HistoryCategory,
-} from './history.enums';
+} from './user-action.enums';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class FilterHistoryDto {
