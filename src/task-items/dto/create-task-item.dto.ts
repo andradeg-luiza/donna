@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, MinLength } from 'class-validator';
+import { IsString, MinLength, IsNotEmpty } from 'class-validator';
 
 export class CreateTaskItemDto {
   @ApiProperty({
@@ -9,4 +9,12 @@ export class CreateTaskItemDto {
   @IsString()
   @MinLength(1)
   title!: string;
+
+  @ApiProperty({
+    example: 'task_123',
+    description: 'ID da task à qual este item pertence',
+  })
+  @IsString()
+  @IsNotEmpty()
+  taskId!: string;
 }

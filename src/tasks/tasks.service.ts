@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CategorySuggestionService } from './category-suggestion.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
+import { TaskCategory } from '@prisma/client';
 
 @Injectable()
 export class TasksService {
@@ -15,9 +16,11 @@ export class TasksService {
   // CREATE
   // -----------------------------------------------------
   async create(userId: string, data: CreateTaskDto) {
-    const category =
+    const categoryString =
       data.category ||
       (await this.categorySuggestion.suggestCategory(data.title));
+
+    const category = categoryString as TaskCategory;
 
     return this.prisma.task.create({
       data: {
@@ -60,11 +63,13 @@ export class TasksService {
   async update(userId: string, taskId: string, data: UpdateTaskDto) {
     const task = await this.findOne(userId, taskId);
 
-    const category =
+    const categoryString =
       data.category ||
       (data.title
         ? await this.categorySuggestion.suggestCategory(data.title)
         : task.category);
+
+    const category = categoryString as TaskCategory;
 
     return this.prisma.task.update({
       where: { id: taskId },
