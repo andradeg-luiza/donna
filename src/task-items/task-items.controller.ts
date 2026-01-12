@@ -1,7 +1,6 @@
 import {
   Controller,
   Post,
-  Get,
   Patch,
   Delete,
   Param,
@@ -31,39 +30,20 @@ export class TaskItemsController {
     return this.taskItemsService.create(userId, taskId, dto);
   }
 
-  @Get()
-  findAll(
-    @CurrentUser('id') userId: string,
-    @Param('taskId') taskId: string,
-  ) {
-    return this.taskItemsService.findAll(userId, taskId);
-  }
-
   @Patch(':itemId')
   update(
     @CurrentUser('id') userId: string,
-    @Param('taskId') taskId: string,
     @Param('itemId') itemId: string,
     @Body() dto: UpdateTaskItemDto,
   ) {
-    return this.taskItemsService.update(userId, taskId, itemId, dto);
+    return this.taskItemsService.update(userId, itemId, dto);
   }
 
   @Delete(':itemId')
   delete(
     @CurrentUser('id') userId: string,
-    @Param('taskId') taskId: string,
     @Param('itemId') itemId: string,
   ) {
-    return this.taskItemsService.delete(userId, taskId, itemId);
-  }
-
-  @Patch(':itemId/toggle')
-  toggle(
-    @CurrentUser('id') userId: string,
-    @Param('taskId') taskId: string,
-    @Param('itemId') itemId: string,
-  ) {
-    return this.taskItemsService.toggle(userId, taskId, itemId);
+    return this.taskItemsService.delete(userId, itemId);
   }
 }

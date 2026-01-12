@@ -7,6 +7,7 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RemindersModule } from './reminders/reminders.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AppointmentsModule } from './appointments/appointments.module';
+import { HistoryModule } from './history/history.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { AppointmentsModule } from './appointments/appointments.module';
     TasksModule,
     RemindersModule,
     AppointmentsModule,
+    HistoryModule,
   ],
   providers: [
     {

@@ -1,16 +1,23 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { RemindersService } from './reminders.service';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class RemindersCron {
   private readonly logger = new Logger(RemindersCron.name);
 
-  constructor(private readonly remindersService: RemindersService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   @Cron(CronExpression.EVERY_MINUTE)
   async handleReminders() {
-    const pending = await this.remindersService.findPending();
+    const now = new Date();
+
+    const pending = await this.prisma.reminder.findMany({
+      where: {
+        sent: false,
+        remindAt: { lte: now },
+      },
+    });
 
     if (pending.length === 0) {
       return;
@@ -19,12 +26,17 @@ export class RemindersCron {
     this.logger.log(`Encontrados ${pending.length} lembretes pendentes.`);
 
     for (const reminder of pending) {
-      // Futuro: envio real via WhatsApp
       this.logger.log(
         `Enviando lembrete ${reminder.id} para usuário ${reminder.userId}: ${reminder.message}`,
       );
 
-      await this.remindersService.markAsSent(reminder.id);
+      await this.prisma.reminder.update({
+        where: { id: reminder.id },
+        data: {
+          sent: true,
+          sentAt: new Date(),
+        },
+      });
     }
   }
 }

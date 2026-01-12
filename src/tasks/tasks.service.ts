@@ -3,16 +3,18 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { RemindersService } from '../reminders/reminders.service';
+import { ActionLoggerService } from '../common/logging/action-logger.service';
 
 @Injectable()
 export class TasksService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly remindersService: RemindersService,
+    private readonly actionLogger: ActionLoggerService,
   ) {}
 
   async create(userId: string, data: CreateTaskDto) {
-    return this.prisma.task.create({
+    const task = await this.prisma.task.create({
       data: {
         userId,
         title: data.title,
@@ -21,6 +23,14 @@ export class TasksService {
         priority: data.priority ?? null,
       },
     });
+
+    // 🔵 Registrar ação no histórico
+    await this.actionLogger.log(userId, 'task.created', {
+      taskId: task.id,
+      title: task.title,
+    });
+
+    return task;
   }
 
   async findAll(userId: string) {

@@ -1,4 +1,4 @@
-import { IsDateString, IsOptional, IsString } from 'class-validator';
+import { IsDateString, IsOptional, IsString, IsUUID } from 'class-validator';
 
 export class CreateReminderDto {
   @IsDateString()
@@ -7,4 +7,12 @@ export class CreateReminderDto {
   @IsOptional()
   @IsString()
   message?: string;
+
+  @IsOptional()
+  @IsUUID()
+  taskId?: string;
+
+  @IsOptional()
+  @IsUUID()
+  appointmentId?: string;
 }

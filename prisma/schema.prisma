@@ -28,6 +28,8 @@ model User {
   tasks        Task[]
   reminders    Reminder[]
   appointments Appointment[]
+
+  actions      UserAction[]
 }
 
 model Task {
@@ -91,4 +93,14 @@ model Reminder {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model UserAction {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
+  action    String
+  payload   Json
+  createdAt DateTime @default(now())
 }

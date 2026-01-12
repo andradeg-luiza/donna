@@ -16,52 +16,41 @@ import { Request } from 'express';
 
 @ApiTags('Reminders')
 @ApiBearerAuth('bearer')
-@Controller('tasks/:taskId/reminders')
+@Controller('reminders')
 export class RemindersController {
   constructor(private readonly remindersService: RemindersService) {}
 
   @Post()
-  create(
-    @Req() req: Request,
-    @Param('taskId') taskId: string,
-    @Body() data: CreateReminderDto,
-  ) {
-    return this.remindersService.create(req.user.id, taskId, data);
+  create(@Req() req: Request, @Body() data: CreateReminderDto) {
+    const userId = (req as any).user.sub;
+    return this.remindersService.create(userId, data);
   }
 
   @Get()
-  findAll(
-    @Req() req: Request,
-    @Param('taskId') taskId: string,
-  ) {
-    return this.remindersService.findAllByTask(req.user.id, taskId);
+  findAll(@Req() req: Request) {
+    const userId = (req as any).user.sub;
+    return this.remindersService.findAll(userId);
   }
 
   @Get(':id')
-  findOne(
-    @Req() req: Request,
-    @Param('taskId') taskId: string,
-    @Param('id') id: string,
-  ) {
-    return this.remindersService.findOne(req.user.id, taskId, id);
+  findOne(@Req() req: Request, @Param('id') id: string) {
+    const userId = (req as any).user.sub;
+    return this.remindersService.findOne(userId, id);
   }
 
   @Patch(':id')
   update(
     @Req() req: Request,
-    @Param('taskId') taskId: string,
     @Param('id') id: string,
     @Body() data: UpdateReminderDto,
   ) {
-    return this.remindersService.update(req.user.id, taskId, id, data);
+    const userId = (req as any).user.sub;
+    return this.remindersService.update(userId, id, data);
   }
 
   @Delete(':id')
-  delete(
-    @Req() req: Request,
-    @Param('taskId') taskId: string,
-    @Param('id') id: string,
-  ) {
-    return this.remindersService.delete(req.user.id, taskId, id);
+  delete(@Req() req: Request, @Param('id') id: string) {
+    const userId = (req as any).user.sub;
+    return this.remindersService.delete(userId, id);
   }
 }

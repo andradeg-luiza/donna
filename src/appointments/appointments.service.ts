@@ -2,13 +2,13 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
-import { RemindersService } from '../reminders/reminders.service';
+import { ActionLoggerService } from '../common/logging/action-logger.service';
 
 @Injectable()
 export class AppointmentsService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly remindersService: RemindersService,
+    private readonly actionLogger: ActionLoggerService,
   ) {}
 
   async create(userId: string, data: CreateAppointmentDto) {
@@ -16,17 +16,16 @@ export class AppointmentsService {
       data: {
         userId,
         description: data.description,
-        scheduledAt: new Date(data.scheduledAt),
+        scheduledAt: data.scheduledAt,
       },
     });
 
-    // lembrete automático opcional
-    if (data.remindAt) {
-      await this.remindersService.create(userId, appointment.id, {
-        remindAt: data.remindAt,
-        message: data.description,
-      });
-    }
+    // 🔵 Registrar ação no histórico
+    await this.actionLogger.log(userId, 'appointment.created', {
+      appointmentId: appointment.id,
+      description: appointment.description,
+      scheduledAt: appointment.scheduledAt,
+    });
 
     return appointment;
   }
@@ -63,9 +62,7 @@ export class AppointmentsService {
       where: { id },
       data: {
         description: data.description ?? appointment.description,
-        scheduledAt: data.scheduledAt
-          ? new Date(data.scheduledAt)
-          : appointment.scheduledAt,
+        scheduledAt: data.scheduledAt ?? appointment.scheduledAt,
       },
     });
   }

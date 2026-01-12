@@ -1,12 +1,17 @@
 import { Module } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { TasksController } from './tasks.controller';
-import { PrismaModule } from '../prisma/prisma.module';
+import { PrismaService } from '../prisma/prisma.service';
+import { ActionLoggerService } from '../common/logging/action-logger.service';
 import { RemindersModule } from '../reminders/reminders.module';
 
 @Module({
-  imports: [PrismaModule, RemindersModule],
+  imports: [RemindersModule],
   controllers: [TasksController],
-  providers: [TasksService],
+  providers: [
+    TasksService,
+    PrismaService,
+    ActionLoggerService,
+  ],
 })
 export class TasksModule {}

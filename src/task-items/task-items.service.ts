@@ -1,86 +1,76 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { TaskItemsRepository } from './task-items.repository';
-import { TasksService } from '../tasks/tasks.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { CreateTaskItemDto } from './dto/create-task-item.dto';
 import { UpdateTaskItemDto } from './dto/update-task-item.dto';
+import { ActionLoggerService } from '../common/logging/action-logger.service';
 
 @Injectable()
 export class TaskItemsService {
   constructor(
-    private readonly taskItemsRepository: TaskItemsRepository,
-    private readonly tasksService: TasksService,
+    private readonly prisma: PrismaService,
+    private readonly actionLogger: ActionLoggerService,
   ) {}
 
-  async create(userId: string, taskId: string, dto: CreateTaskItemDto) {
-    const task = await this.tasksService.findOne(userId, taskId);
+  async create(userId: string, taskId: string, data: CreateTaskItemDto) {
+    // Verifica se a task pertence ao usuário
+    const task = await this.prisma.task.findFirst({
+      where: { id: taskId, userId },
+    });
 
     if (!task) {
-      throw new NotFoundException('Task not found');
+      throw new NotFoundException('Task não encontrada.');
     }
 
-    return this.taskItemsRepository.create(taskId, dto.title);
+    const item = await this.prisma.taskItem.create({
+      data: {
+        taskId,
+        title: data.title,
+      },
+    });
+
+    // 🔵 Registrar ação no histórico
+    await this.actionLogger.log(userId, 'task.item.created', {
+      itemId: item.id,
+      taskId,
+      title: item.title,
+    });
+
+    return item;
   }
 
-  async findAll(userId: string, taskId: string) {
-    const task = await this.tasksService.findOne(userId, taskId);
+  async update(userId: string, id: string, data: UpdateTaskItemDto) {
+    const item = await this.prisma.taskItem.findFirst({
+      where: { id },
+      include: { task: true },
+    });
 
-    if (!task) {
-      throw new NotFoundException('Task not found');
+    if (!item || item.task.userId !== userId) {
+      throw new NotFoundException('Item não encontrado.');
     }
 
-    return this.taskItemsRepository.findAllByTask(taskId);
+    return this.prisma.taskItem.update({
+      where: { id },
+      data: {
+        title: data.title ?? item.title,
+        done: typeof data.done === 'boolean' ? data.done : item.done,
+      },
+    });
   }
 
-  async update(
-    userId: string,
-    taskId: string,
-    itemId: string,
-    dto: UpdateTaskItemDto,
-  ) {
-    const task = await this.tasksService.findOne(userId, taskId);
+  async delete(userId: string, id: string) {
+    const item = await this.prisma.taskItem.findFirst({
+      where: { id },
+      include: { task: true },
+    });
 
-    if (!task) {
-      throw new NotFoundException('Task not found');
+    if (!item || item.task.userId !== userId) {
+      throw new NotFoundException('Item não encontrado.');
     }
 
-    const item = await this.taskItemsRepository.findById(itemId);
+    await this.prisma.taskItem.delete({
+      where: { id },
+    });
 
-    if (!item || item.taskId !== taskId) {
-      throw new NotFoundException('Task item not found');
-    }
-
-    return this.taskItemsRepository.update(itemId, dto);
-  }
-
-  async delete(userId: string, taskId: string, itemId: string) {
-    const task = await this.tasksService.findOne(userId, taskId);
-
-    if (!task) {
-      throw new NotFoundException('Task not found');
-    }
-
-    const item = await this.taskItemsRepository.findById(itemId);
-
-    if (!item || item.taskId !== taskId) {
-      throw new NotFoundException('Task item not found');
-    }
-
-    return this.taskItemsRepository.delete(itemId);
-  }
-
-  async toggle(userId: string, taskId: string, itemId: string) {
-    const task = await this.tasksService.findOne(userId, taskId);
-
-    if (!task) {
-      throw new NotFoundException('Task not found');
-    }
-
-    const item = await this.taskItemsRepository.findById(itemId);
-
-    if (!item || item.taskId !== taskId) {
-      throw new NotFoundException('Task item not found');
-    }
-
-    return this.taskItemsRepository.update(itemId, { done: !item.done });
+    return { message: 'Item removido com sucesso.' };
   }
 }
