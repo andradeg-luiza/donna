@@ -12,7 +12,8 @@
     "test:e2e": "cross-env NODE_ENV=test jest --config jest-e2e.json",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "release": "semantic-release"
   },
   "dependencies": {
     "@nestjs/common": "^10.4.22",
