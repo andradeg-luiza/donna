@@ -1,0 +1,23 @@
+{
+  "testTimeout": 30000,
+  "maxWorkers": 1,
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "rootDir": "./",
+
+  "modulePaths": ["<rootDir>/src"],
+  "moduleNameMapper": {
+    "^app.module$": "<rootDir>/src/app.module.ts"
+  },
+
+  "testRegex": ".e2e-spec.ts$",
+  "transform": {
+    "^.+\\.ts$": [
+      "ts-jest",
+      {
+        "tsconfig": "tsconfig.test.json"
+      }
+    ]
+  },
+
+  "setupFiles": ["<rootDir>/test/e2e/jest-env-setup.ts"]
+}

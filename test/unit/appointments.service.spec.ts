@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AppointmentsService } from '../../src/appointments/appointments.service';
 import { PrismaService } from '../../src/prisma/prisma.service';
 import { prismaMock } from '../prisma/prisma-mock';
-import { NotFoundException } from '@nestjs/common';
+import { NotFoundException, ForbiddenException } from '@nestjs/common';
 
 describe('AppointmentsService', () => {
   let service: AppointmentsService;
@@ -69,9 +69,10 @@ describe('AppointmentsService', () => {
   // -----------------------------------------------------
   describe('findOne', () => {
     it('should return an appointment', async () => {
-      prisma.appointment.findFirst.mockResolvedValue({
+      prisma.appointment.findUnique.mockResolvedValue({
         id: 'app1',
         description: 'Teste',
+        userId: 'user1',
       });
 
       const result = await service.findOne('user1', 'app1');
@@ -80,10 +81,22 @@ describe('AppointmentsService', () => {
     });
 
     it('should throw if appointment not found', async () => {
-      prisma.appointment.findFirst.mockResolvedValue(null);
+      prisma.appointment.findUnique.mockResolvedValue(null);
 
       await expect(service.findOne('user1', 'app1')).rejects.toThrow(
         NotFoundException,
+      );
+    });
+
+    it('should throw if appointment belongs to another user', async () => {
+      prisma.appointment.findUnique.mockResolvedValue({
+        id: 'app1',
+        description: 'Teste',
+        userId: 'other',
+      });
+
+      await expect(service.findOne('user1', 'app1')).rejects.toThrow(
+        ForbiddenException,
       );
     });
   });
@@ -93,7 +106,10 @@ describe('AppointmentsService', () => {
   // -----------------------------------------------------
   describe('update', () => {
     it('should update an appointment', async () => {
-      prisma.appointment.findFirst.mockResolvedValue({ id: 'app1' });
+      prisma.appointment.findUnique.mockResolvedValue({
+        id: 'app1',
+        userId: 'user1',
+      });
 
       prisma.appointment.update.mockResolvedValue({
         id: 'app1',
@@ -108,11 +124,22 @@ describe('AppointmentsService', () => {
     });
 
     it('should throw if appointment not found', async () => {
-      prisma.appointment.findFirst.mockResolvedValue(null);
+      prisma.appointment.findUnique.mockResolvedValue(null);
 
       await expect(
         service.update('user1', 'app1', { description: 'X' }),
       ).rejects.toThrow(NotFoundException);
+    });
+
+    it('should throw if appointment belongs to another user', async () => {
+      prisma.appointment.findUnique.mockResolvedValue({
+        id: 'app1',
+        userId: 'other',
+      });
+
+      await expect(
+        service.update('user1', 'app1', { description: 'X' }),
+      ).rejects.toThrow(ForbiddenException);
     });
   });
 
@@ -121,7 +148,10 @@ describe('AppointmentsService', () => {
   // -----------------------------------------------------
   describe('remove', () => {
     it('should remove an appointment', async () => {
-      prisma.appointment.findFirst.mockResolvedValue({ id: 'app1' });
+      prisma.appointment.findUnique.mockResolvedValue({
+        id: 'app1',
+        userId: 'user1',
+      });
 
       prisma.appointment.delete.mockResolvedValue({});
 
@@ -137,10 +167,21 @@ describe('AppointmentsService', () => {
     });
 
     it('should throw if appointment not found', async () => {
-      prisma.appointment.findFirst.mockResolvedValue(null);
+      prisma.appointment.findUnique.mockResolvedValue(null);
 
       await expect(service.remove('user1', 'app1')).rejects.toThrow(
         NotFoundException,
+      );
+    });
+
+    it('should throw if appointment belongs to another user', async () => {
+      prisma.appointment.findUnique.mockResolvedValue({
+        id: 'app1',
+        userId: 'other',
+      });
+
+      await expect(service.remove('user1', 'app1')).rejects.toThrow(
+        ForbiddenException,
       );
     });
   });

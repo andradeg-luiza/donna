@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
@@ -7,9 +7,6 @@ import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 export class AppointmentsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  // -----------------------------------------------------
-  // CREATE
-  // -----------------------------------------------------
   async create(userId: string, data: CreateAppointmentDto) {
     return this.prisma.appointment.create({
       data: {
@@ -20,9 +17,6 @@ export class AppointmentsService {
     });
   }
 
-  // -----------------------------------------------------
-  // FIND ALL
-  // -----------------------------------------------------
   async findAll(userId: string) {
     return this.prisma.appointment.findMany({
       where: { userId },
@@ -30,29 +24,23 @@ export class AppointmentsService {
     });
   }
 
-  // -----------------------------------------------------
-  // FIND ONE
-  // -----------------------------------------------------
   async findOne(userId: string, appointmentId: string) {
-    const appointment = await this.prisma.appointment.findFirst({
-      where: { id: appointmentId, userId },
+    const appointment = await this.prisma.appointment.findUnique({
+      where: { id: appointmentId },
     });
 
     if (!appointment) {
       throw new NotFoundException('Compromisso não encontrado.');
     }
 
+    if (appointment.userId !== userId) {
+      throw new ForbiddenException('Acesso negado.');
+    }
+
     return appointment;
   }
 
-  // -----------------------------------------------------
-  // UPDATE
-  // -----------------------------------------------------
-  async update(
-    userId: string,
-    appointmentId: string,
-    data: UpdateAppointmentDto,
-  ) {
+  async update(userId: string, appointmentId: string, data: UpdateAppointmentDto) {
     await this.findOne(userId, appointmentId);
 
     return this.prisma.appointment.update({
@@ -61,9 +49,6 @@ export class AppointmentsService {
     });
   }
 
-  // -----------------------------------------------------
-  // REMOVE
-  // -----------------------------------------------------
   async remove(userId: string, appointmentId: string) {
     await this.findOne(userId, appointmentId);
 

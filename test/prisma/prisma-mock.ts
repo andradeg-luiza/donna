@@ -1,5 +1,3 @@
-// test/prisma/prisma-mock.ts
-
 export const prismaMock = {
   user: {
     findUnique: jest.fn(),
@@ -8,6 +6,7 @@ export const prismaMock = {
   },
 
   task: {
+    findUnique: jest.fn(),   // ← ADICIONADO
     findMany: jest.fn(),
     findFirst: jest.fn(),
     create: jest.fn(),
@@ -16,6 +15,7 @@ export const prismaMock = {
   },
 
   taskItem: {
+    findUnique: jest.fn(),   // ← ADICIONADO
     findMany: jest.fn(),
     findFirst: jest.fn(),
     create: jest.fn(),
@@ -24,6 +24,7 @@ export const prismaMock = {
   },
 
   reminder: {
+    findUnique: jest.fn(),   // ← ADICIONADO
     findMany: jest.fn(),
     findFirst: jest.fn(),
     create: jest.fn(),
@@ -32,6 +33,7 @@ export const prismaMock = {
   },
 
   appointment: {
+    findUnique: jest.fn(),   // ← ADICIONADO
     findMany: jest.fn(),
     findFirst: jest.fn(),
     create: jest.fn(),

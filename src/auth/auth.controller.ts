@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Get, Req } from '@nestjs/common';
+import { Body, Controller, Post, Get, Req, HttpCode } from '@nestjs/common';
 import { ApiBody, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { Request } from 'express';
 
@@ -22,13 +22,15 @@ export class AuthController {
 
   @Public()
   @Post('login')
+  @HttpCode(200)
   @ApiBody({ type: LoginDto })
   login(@Body() data: LoginDto) {
     return this.authService.login(data);
   }
 
   @Public()
-  @Post('mfa/verify')
+  @Post('verify-mfa')
+  @HttpCode(200)
   @ApiBody({ type: VerifyMfaDto })
   verifyMfa(@Body() data: VerifyMfaDto) {
     return this.authService.verifyMfa(data);

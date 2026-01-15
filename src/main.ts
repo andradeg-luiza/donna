@@ -10,29 +10,31 @@ import { HttpExceptionFilter } from './common/filter/http-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    cors: true, // habilita CORS automaticamente
+    cors: true,
   });
 
-  // Swagger
-  const config = new DocumentBuilder()
-    .setTitle('Donna API')
-    .setDescription(
-      'Documentação da API — <a href="/api-json" target="_blank">Abrir JSON</a>',
-    )
-    .setVersion('1.0.0')
-    .addBearerAuth(
-      {
-        type: 'http',
-        scheme: 'bearer',
-        bearerFormat: 'JWT',
-        in: 'header',
-      },
-      'bearer',
-    )
-    .build();
+  // Swagger — DESABILITADO em ambiente de teste
+  if (process.env.NODE_ENV !== 'test') {
+    const config = new DocumentBuilder()
+      .setTitle('Donna API')
+      .setDescription(
+        'Documentação da API — <a href="/api-json" target="_blank">Abrir JSON</a>',
+      )
+      .setVersion('1.0.0')
+      .addBearerAuth(
+        {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          in: 'header',
+        },
+        'bearer',
+      )
+      .build();
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api', app, document);
+  }
 
   // Pipes globais
   app.useGlobalPipes(

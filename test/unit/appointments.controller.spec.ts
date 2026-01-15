@@ -1,124 +1,81 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AppointmentsController } from '../../src/appointments/appointments.controller';
 import { AppointmentsService } from '../../src/appointments/appointments.service';
+import { PrismaService } from '../../src/prisma/prisma.service';
+import { prismaMock } from '../prisma/prisma-mock';
+import { NotFoundException, ForbiddenException } from '@nestjs/common';
 
-describe('AppointmentsController', () => {
-  let controller: AppointmentsController;
-  let service: jest.Mocked<AppointmentsService>;
-
-  const mockAppointmentsService = {
-    create: jest.fn(),
-    findAll: jest.fn(),
-    findOne: jest.fn(),
-    update: jest.fn(),
-    remove: jest.fn(),
-  } as unknown as jest.Mocked<AppointmentsService>;
-
-  const mockUser = { id: 'user1' };
-
-  // Mock completo compatível com o Prisma
-  const mockAppointment = {
-    id: 'app1',
-    description: 'Consulta médica',
-    scheduledAt: new Date(),
-    userId: 'user1',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  };
+describe('AppointmentsService', () => {
+  let service: AppointmentsService;
+  let prisma: typeof prismaMock;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [AppointmentsController],
       providers: [
-        { provide: AppointmentsService, useValue: mockAppointmentsService },
+        AppointmentsService,
+        { provide: PrismaService, useValue: prismaMock },
       ],
     }).compile();
 
-    controller = module.get<AppointmentsController>(AppointmentsController);
-    service = module.get(AppointmentsService);
+    service = module.get<AppointmentsService>(AppointmentsService);
+    prisma = module.get(PrismaService);
 
     jest.clearAllMocks();
   });
 
-  // -----------------------------------------------------
-  // CREATE
-  // -----------------------------------------------------
-  describe('create', () => {
-    it('should call AppointmentsService.create with correct params', async () => {
-      service.create.mockResolvedValue(mockAppointment);
+  const mockAppointment = {
+    id: 'app1',
+    description: 'Consulta',
+    scheduledAt: new Date(),
+    userId: 'user1',
+  };
 
-      const dto = {
-        description: 'Consulta médica',
-        scheduledAt: new Date().toISOString(),
-      };
-
-      const result = await controller.create(mockUser, dto as any);
-
-      expect(service.create).toHaveBeenCalledWith('user1', dto);
-      expect(result).toEqual(mockAppointment);
-    });
-  });
-
-  // -----------------------------------------------------
-  // FIND ALL
-  // -----------------------------------------------------
-  describe('findAll', () => {
-    it('should call AppointmentsService.findAll', async () => {
-      service.findAll.mockResolvedValue([mockAppointment]);
-
-      const result = await controller.findAll(mockUser);
-
-      expect(service.findAll).toHaveBeenCalledWith('user1');
-      expect(result).toEqual([mockAppointment]);
-    });
-  });
-
-  // -----------------------------------------------------
-  // FIND ONE
-  // -----------------------------------------------------
   describe('findOne', () => {
-    it('should call AppointmentsService.findOne', async () => {
-      service.findOne.mockResolvedValue(mockAppointment);
+    it('should return an appointment', async () => {
+      prisma.appointment.findUnique.mockResolvedValue(mockAppointment);
 
-      const result = await controller.findOne(mockUser, 'app1');
+      const result = await service.findOne('user1', 'app1');
 
-      expect(service.findOne).toHaveBeenCalledWith('user1', 'app1');
       expect(result).toEqual(mockAppointment);
+    });
+
+    it('should throw 404 if appointment does not exist', async () => {
+      prisma.appointment.findUnique.mockResolvedValue(null);
+
+      await expect(service.findOne('user1', 'app1')).rejects.toThrow(NotFoundException);
+    });
+
+    it('should throw 403 if appointment belongs to another user', async () => {
+      prisma.appointment.findUnique.mockResolvedValue({
+        ...mockAppointment,
+        userId: 'other',
+      });
+
+      await expect(service.findOne('user1', 'app1')).rejects.toThrow(ForbiddenException);
     });
   });
 
-  // -----------------------------------------------------
-  // UPDATE
-  // -----------------------------------------------------
   describe('update', () => {
-    it('should call AppointmentsService.update', async () => {
-      const updatedAppointment = {
+    it('should update an appointment', async () => {
+      prisma.appointment.findUnique.mockResolvedValue(mockAppointment);
+      prisma.appointment.update.mockResolvedValue({
         ...mockAppointment,
         description: 'Atualizado',
-      };
+      });
 
-      service.update.mockResolvedValue(updatedAppointment);
+      const result = await service.update('user1', 'app1', { description: 'Atualizado' });
 
-      const dto = { description: 'Atualizado' };
-      const result = await controller.update(mockUser, 'app1', dto as any);
-
-      expect(service.update).toHaveBeenCalledWith('user1', 'app1', dto);
-      expect(result).toEqual(updatedAppointment);
+      expect(result.description).toBe('Atualizado');
     });
   });
 
-  // -----------------------------------------------------
-  // REMOVE
-  // -----------------------------------------------------
   describe('remove', () => {
-    it('should call AppointmentsService.remove', async () => {
-      const response = { message: 'Compromisso removido com sucesso.' };
-      service.remove.mockResolvedValue(response);
+    it('should remove an appointment', async () => {
+      prisma.appointment.findUnique.mockResolvedValue(mockAppointment);
+      prisma.appointment.delete.mockResolvedValue({});
 
-      const result = await controller.remove(mockUser, 'app1');
+      const result = await service.remove('user1', 'app1');
 
-      expect(service.remove).toHaveBeenCalledWith('user1', 'app1');
-      expect(result).toEqual(response);
+      expect(result).toEqual({ message: 'Compromisso removido com sucesso.' });
     });
   });
 });

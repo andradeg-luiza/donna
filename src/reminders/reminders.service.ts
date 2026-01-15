@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateReminderDto } from './dto/create-reminder.dto';
 import { UpdateReminderDto } from './dto/update-reminder.dto';
@@ -7,36 +7,38 @@ import { UpdateReminderDto } from './dto/update-reminder.dto';
 export class RemindersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  // -----------------------------------------------------
-  // CREATE
-  // -----------------------------------------------------
   async create(userId: string, data: CreateReminderDto) {
-    // Valida se está associado a uma task ou appointment
     if (!data.taskId && !data.appointmentId) {
-      throw new NotFoundException(
+      throw new ForbiddenException(
         'O lembrete deve estar associado a uma task ou appointment.',
       );
     }
 
-    // Valida ownership da task
     if (data.taskId) {
-      const task = await this.prisma.task.findFirst({
-        where: { id: data.taskId, userId },
+      const task = await this.prisma.task.findUnique({
+        where: { id: data.taskId },
       });
 
       if (!task) {
         throw new NotFoundException('Task não encontrada.');
       }
+
+      if (task.userId !== userId) {
+        throw new ForbiddenException('Acesso negado.');
+      }
     }
 
-    // Valida ownership do appointment
     if (data.appointmentId) {
-      const appointment = await this.prisma.appointment.findFirst({
-        where: { id: data.appointmentId, userId },
+      const appointment = await this.prisma.appointment.findUnique({
+        where: { id: data.appointmentId },
       });
 
       if (!appointment) {
         throw new NotFoundException('Appointment não encontrado.');
+      }
+
+      if (appointment.userId !== userId) {
+        throw new ForbiddenException('Acesso negado.');
       }
     }
 
@@ -51,9 +53,6 @@ export class RemindersService {
     });
   }
 
-  // -----------------------------------------------------
-  // FIND ALL
-  // -----------------------------------------------------
   async findAll(userId: string) {
     return this.prisma.reminder.findMany({
       where: { userId },
@@ -61,24 +60,22 @@ export class RemindersService {
     });
   }
 
-  // -----------------------------------------------------
-  // FIND ONE
-  // -----------------------------------------------------
   async findOne(userId: string, reminderId: string) {
-    const reminder = await this.prisma.reminder.findFirst({
-      where: { id: reminderId, userId },
+    const reminder = await this.prisma.reminder.findUnique({
+      where: { id: reminderId },
     });
 
     if (!reminder) {
       throw new NotFoundException('Lembrete não encontrado.');
     }
 
+    if (reminder.userId !== userId) {
+      throw new ForbiddenException('Acesso negado.');
+    }
+
     return reminder;
   }
 
-  // -----------------------------------------------------
-  // UPDATE
-  // -----------------------------------------------------
   async update(userId: string, reminderId: string, data: UpdateReminderDto) {
     await this.findOne(userId, reminderId);
 
@@ -88,9 +85,6 @@ export class RemindersService {
     });
   }
 
-  // -----------------------------------------------------
-  // REMOVE
-  // -----------------------------------------------------
   async remove(userId: string, reminderId: string) {
     await this.findOne(userId, reminderId);
 

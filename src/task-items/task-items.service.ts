@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateTaskItemDto } from './dto/create-task-item.dto';
 import { UpdateTaskItemDto } from './dto/update-task-item.dto';
@@ -11,13 +11,19 @@ export class TaskItemsService {
   // CREATE
   // -----------------------------------------------------
   async create(userId: string, data: CreateTaskItemDto) {
-    // Valida ownership da task
-    const task = await this.prisma.task.findFirst({
-      where: { id: data.taskId, userId },
+    // 1. Busca a task pelo ID
+    const task = await this.prisma.task.findUnique({
+      where: { id: data.taskId },
     });
 
+    // 2. Se não existe → 404
     if (!task) {
       throw new NotFoundException('Task não encontrada.');
+    }
+
+    // 3. Se existe mas pertence a outro usuário → 403
+    if (task.userId !== userId) {
+      throw new ForbiddenException('Acesso negado.');
     }
 
     return this.prisma.taskItem.create({
@@ -32,13 +38,16 @@ export class TaskItemsService {
   // FIND ALL
   // -----------------------------------------------------
   async findAll(userId: string, taskId: string) {
-    // Valida ownership da task
-    const task = await this.prisma.task.findFirst({
-      where: { id: taskId, userId },
+    const task = await this.prisma.task.findUnique({
+      where: { id: taskId },
     });
 
     if (!task) {
       throw new NotFoundException('Task não encontrada.');
+    }
+
+    if (task.userId !== userId) {
+      throw new ForbiddenException('Acesso negado.');
     }
 
     return this.prisma.taskItem.findMany({
@@ -51,15 +60,17 @@ export class TaskItemsService {
   // FIND ONE (interno)
   // -----------------------------------------------------
   private async findOneInternal(userId: string, itemId: string) {
-    const item = await this.prisma.taskItem.findFirst({
-      where: {
-        id: itemId,
-        task: { userId },
-      },
+    const item = await this.prisma.taskItem.findUnique({
+      where: { id: itemId },
+      include: { task: true },
     });
 
     if (!item) {
       throw new NotFoundException('Item não encontrado.');
+    }
+
+    if (item.task.userId !== userId) {
+      throw new ForbiddenException('Acesso negado.');
     }
 
     return item;
