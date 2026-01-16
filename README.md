@@ -20,7 +20,7 @@ Para garantir consistência em todas as interações, existe um documento dedica
 - orientações para evolução da marca  
 
 📄 **Documento completo:**  
-👉 [`docs/DONNA-IDENTIDADE.md`](docs/DONNA-IDENTIDADE.md)
+👉 `[Parece que o resultado não era seguro para exibição. Vamos mudar as coisas e tentar outra opção!]`
 
 Esse documento serve como referência para:
 
@@ -29,6 +29,14 @@ Esse documento serve como referência para:
 - redatores  
 - colaboradores externos  
 - integrações futuras (WhatsApp, IA, UX conversacional)
+
+---
+
+## 🧭 Diagramas do Sistema
+
+Os diagramas completos do fluxo de Tasks, lembretes, categorias e arquitetura geral estão disponíveis em:
+
+👉 `[Parece que o resultado não era seguro para exibição. Vamos mudar as coisas e tentar outra opção!]`
 
 ---
 
