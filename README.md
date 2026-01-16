@@ -1,184 +1,252 @@
-# Donna — Assistente Pessoal Inteligente via WhatsApp
+# 📘 Donna — Assistente Inteligente de Produtividade
 
-Donna é um assistente pessoal conversacional que funciona pelo WhatsApp, focado em:
-
-- 📅 **Agenda e compromissos**
-- ⏰ **Lembretes inteligentes**
-- 📝 **Tarefas**
-- 🛒 **Listas** (compras, afazeres, etc.)
-- 💬 **Conversa em linguagem natural**
-- 🧠 **Memória contextual por usuário**
-
-O objetivo é ajudar pessoas a organizarem sua vida pessoal de forma simples, natural e contínua, usando o canal que elas já utilizam todos os dias: **WhatsApp**.
-
-Donna evoluirá progressivamente até se tornar uma assistente altamente inteligente, capaz de compreender contexto, preferências e rotinas — uma verdadeira copilota da vida pessoal.
+Donna é um backend moderno, escalável e inteligente para gerenciamento de tarefas, lembretes, listas e automações.  
+Construída com **NestJS**, **Prisma**, **PostgreSQL** e preparada para integrações com **WhatsApp** e **IA generativa**, Donna é a base de um assistente pessoal completo.
 
 ---
 
-## 📘 Identidade da Donna
+## 🪪 Identidade da Donna
 
-A personalidade, tom de voz, princípios e estilo de comunicação da Donna estão documentados em:
+A Donna não é apenas um sistema — ela é uma **assistente inteligente com personalidade, propósito e coerência**.  
+Para garantir consistência em todas as interações, existe um documento dedicado à identidade da Donna, cobrindo:
 
-👉 **[docs/DONNA-IDENTIDADE.md](docs/DONNA-IDENTIDADE.md)**
+- missão  
+- visão  
+- valores  
+- tom de voz  
+- diretrizes de comunicação  
+- persona e estilo  
+- princípios de UX conversacional  
+- orientações para evolução da marca  
 
----
+📄 **Documento completo:**  
+👉 [`docs/DONNA-IDENTIDADE.md`](docs/DONNA-IDENTIDADE.md)
 
-## 1. Visão Geral do Produto
+Esse documento serve como referência para:
 
-- **Público-alvo inicial:** Uso pessoal (organização da vida individual).
-- **Futuro:** Evolução para uso profissional (times, squads, empresas).
-
-### Principais Capacidades
-
-- **Entender mensagens em linguagem natural**  
-  Ex: “me lembra de pagar o cartão amanhã às 10h”.
-- **Identificar intenção**  
-  Criar lembrete, compromisso, tarefa, atualizar lista, etc.
-- **Extrair entidades**  
-  Data, hora, título, prioridade, recorrência.
-- **Executar ações seguras**  
-  Sempre validadas pelas regras de negócio.
-- **Responder de forma amigável e clara**
-- **Manter memória contextual**  
-  Entender referências como “depois”, “amanhã”, “isso”, “aquele compromisso”.
+- desenvolvedores  
+- designers  
+- redatores  
+- colaboradores externos  
+- integrações futuras (WhatsApp, IA, UX conversacional)
 
 ---
 
-## 2. Arquitetura
+## 🏗️ Arquitetura do Projeto
 
-### 2.1. Estilo Arquitetural
+A arquitetura segue princípios de **Clean Architecture**, **Domain‑Driven Design (DDD)** e **modularização do NestJS**.
 
-- **Clean Architecture**
-- **Arquitetura Modular**
-- **Separação de Preocupações:** Presentation, Application, Domain e Infrastructure.
+### Tecnologias principais
+- **NestJS** — framework modular e opinado para Node.js  
+- **Prisma ORM** — acesso ao banco de dados com tipagem forte  
+- **PostgreSQL** — banco relacional robusto  
+- **Jest** — testes unitários e E2E  
+- **GitHub Actions** — CI/CD com testes automatizados  
+- **Docker (futuro)** — containerização  
 
-### 2.2. Camadas
-
-| Camada | Responsabilidades |
-| ------ | ----------------- |
-| **Presentation** | Webhooks WhatsApp API, Controllers, Adaptadores de canal e DTOs |
-| **Application** | Casos de Uso (CRUDs, consultas), Orquestração de fluxos e Validação |
-| **Domain** | Entidades (User, Task, etc), Value Objects e Interfaces |
-| **Infrastructure** | PostgreSQL, OpenAI API (LLM), Persistência, Logs e Integrações |
-
----
-
-## 3. Stack Tecnológica
-
-### Backend
-
-- **Node.js + TypeScript**
-- **Framework:** NestJS  
-  *Motivos:* arquitetura modular nativa, injeção de dependência, ecossistema maduro.
-
-### IA / NLP
-
-- **OpenAI API (LLM):** Prompt engineering estruturado.
-- **Pipelines:** Classificação de intenção, extração de entidades, memória contextual.
-
-### WhatsApp
-
-- **WhatsApp Business Cloud API (Meta):** Webhooks e envio de mensagens estruturadas.
-
-### Persistência & Infra
-
-- **Banco de Dados:** PostgreSQL (Prisma)
-- **Infraestrutura:** Docker e deploy via Railway
-- **Qualidade:** Testes unitários, integração e E2E
+### Camadas
+| Camada | Responsabilidade |
+|-------|------------------|
+| **Controllers** | Recebem requisições HTTP e chamam os serviços |
+| **Services** | Contêm regras de negócio |
+| **Repositories (Prisma)** | Acesso ao banco de dados |
+| **Modules** | Agrupam funcionalidades por domínio |
+| **Middlewares / Guards** | Autenticação, MFA, autorização |
+| **Cron Jobs** | Lembretes automáticos |
 
 ---
 
-## 4. Modelo de Dados (Visão Conceitual)
+## 📦 Módulos do Sistema
 
-### Entidades Principais
+### 1. AuthModule
+- Registro de usuários  
+- Login com MFA  
+- Validação de sessão  
+- Recuperação de senha (planejado)
 
-- **User:** `id`, `whatsapp_id`, `name`, `timestamps`
-- **Appointment:** `user_id`, `title`, `description`, `start_datetime`, `end_datetime`, `recurrence`
-- **Reminder:** `user_id`, `title`, `remind_at`, `recurrence`
-- **Task:** `user_id`, `title`, `priority`, `due_datetime`, `status`
-- **List / ListItem:** `name`, `type`, `description`, `quantity`, `checked`
+### 2. TasksModule
+- CRUD de tarefas  
+- Prioridade manual  
+- Prioridade automática (IA)  
+- Histórico de ações
 
-> **Nota:** Toda mensagem recebida é vinculada a um `user_id` através do `whatsapp_id`.  
-> A memória contextual pode ser armazenada em uma tabela dedicada ou campo `JSONB`.
+### 3. TaskItemsModule
+- Itens dentro de uma task  
+- Marcar como concluído  
+- Listagem e exclusão
+
+### 4. RemindersModule
+- Criação de lembretes  
+- Cancelamento automático  
+- Envio automático (cron jobs)
+
+### 5. CategoriesModule
+- Sugestão automática de categorias  
+- Classificação inteligente
+
+### 6. HistoryModule
+- Registro de todas as ações do usuário  
+- Auditoria completa
+
+### 7. WhatsAppModule (planejado)
+- Webhook  
+- Parser de linguagem natural  
+- Criação de tasks via WhatsApp  
+- Envio de lembretes pelo WhatsApp  
+
+### 8. PaymentsModule (planejado)
+- Assinaturas  
+- Planos  
+- Limites de uso  
+- Eventos de pagamento  
+
+### 9. AiModule (planejado)
+- Cohere Command‑Light  
+- Interpretação de mensagens  
+- Criação de tasks por linguagem natural  
+- Sugestão de categorias  
+- Sugestão de prioridade  
+- Respostas naturais  
+- Controle de custos  
 
 ---
 
-## 5. Fluxo: Mensagem → Intenção → Ação → Resposta
+## 🔄 Fluxo de Tasks
 
-1. **Entrada:** Mensagem chega via Webhook (Presentation)
-2. **Normalização:** Extração do texto e metadados
-3. **Identificação:** Localização do `User` no banco
-4. **Interpretação (NLP):**  
-   OpenAI retorna intenção + entidades (a IA sugere, não executa)
-5. **Execução (Application):**  
-   Caso de Uso valida e persiste os dados
-6. **Resposta:**  
-   Confirmação enviada ao WhatsApp (estática ou via LLM)
-7. **Contexto:**  
-   Atualização do histórico de conversação
+O fluxo completo de uma Task no sistema:
+
+1. **Usuário cria uma Task**  
+   - Pode incluir título, descrição, prioridade e categoria  
+   - Categoria pode ser sugerida automaticamente  
+   - Prioridade pode ser sugerida automaticamente  
+
+2. **Sistema registra histórico da ação**
+
+3. **Usuário adiciona itens (TaskItems)**  
+   - Cada item pode ser concluído individualmente  
+
+4. **Usuário cria lembretes**  
+   - Lembretes são monitorados por cron jobs  
+   - Se a task for concluída, lembretes são cancelados automaticamente  
+
+5. **Usuário atualiza ou exclui a Task**
+
+6. **Sistema registra todas as ações no histórico**
 
 ---
 
-## 6. Organização de Pastas (Proposta Inicial)
+## ▶️ Como rodar o projeto
 
-```text
-/donna
-  /src
-    /presentation      # Controllers e DTOs WhatsApp
-    /application       # Use cases (regras de aplicação)
-    /domain            # Entidades, Value Objects e Interfaces
-    /infrastructure    # Implementações (DB, OpenAI, WhatsApp API)
-    /config            # Variáveis e Módulos NestJS
-  /test                # Unitários, Integração e Conversação
-  /docs                # Documentação do projeto (Identidade, Arquitetura, etc.)
+### 1. Instalar dependências
+```bash
+npm install
+```
+
+### 2. Configurar variáveis de ambiente
+Crie um arquivo `.env`:
+
+```
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/donna"
+JWT_SECRET="sua_chave_aqui"
+```
+
+### 3. Rodar migrations
+```bash
+npx prisma migrate dev
+```
+
+### 4. Gerar Prisma Client
+```bash
+npx prisma generate
+```
+
+### 5. Iniciar o servidor
+```bash
+npm run start:dev
+```
+
+O servidor iniciará em:
+
+```
+http://localhost:3000
 ```
 
 ---
 
-## 7. Como rodar o projeto
+## 🧪 Como rodar os testes
 
-### Pré-requisitos
+### Testes unitários
+```bash
+npm run test
+```
 
-- Node.js LTS
-- Docker
-- API Keys: WhatsApp Business Cloud & OpenAI
+### Testes end‑to‑end (E2E)
+```bash
+npm run test:e2e
+```
 
-### Passos
+### Cobertura de testes
+```bash
+npm run test -- --coverage
+```
 
-1. Clonar o repositório
-2. Criar o arquivo `.env` com tokens e URL do banco
-3. Subir o banco via Docker  
+---
+
+## 🤝 Como contribuir
+
+1. Faça um fork do repositório  
+2. Crie uma branch para sua feature:
    ```bash
-   docker-compose up -d
+   git checkout -b feature/nome-da-feature
    ```
-4. Rodar migrações e iniciar o servidor  
+3. Faça commits claros e pequenos  
+4. Garanta que os testes passam:
    ```bash
-   npm run start:dev
+   npm run test
+   npm run test:e2e
    ```
-5. Configurar o webhook no painel da Meta
+5. Abra um Pull Request descrevendo:
+   - O que foi feito  
+   - Por que foi feito  
+   - Como testar  
 
 ---
 
-## 8. Git e Versionamento
+## 🗺️ Roadmap
 
-- **Branches:**  
-  `main` (estável), `develop` (desenvolvimento), `feature/*`, `fix/*`
-- **Fluxo:**  
-  Pull Requests → Homologação → Merge em `main`
+### ÉPICO 8 — WhatsApp
+- Criar tasks via WhatsApp  
+- Listas via WhatsApp  
+- Lembretes via WhatsApp  
+- Outbound messages  
+
+### ÉPICO 10 — Pagamentos
+- Assinaturas  
+- Planos  
+- Limites de uso  
+- Eventos de pagamento  
+- Bloqueio automático  
+
+### ÉPICO 11 — IA
+- Interpretação de mensagens  
+- Criação de tasks por linguagem natural  
+- Sugestão de categorias  
+- Sugestão de prioridade  
+- Respostas naturais  
+- Controle de custos  
+
+### ÉPICO 12 — WhatsApp (Infraestrutura)
+- Webhook  
+- Verificação  
+- Parser  
+- Vincular número do usuário  
+
+### ÉPICO 13 — Automação
+- Evolução dos lembretes  
+- Fluxos inteligentes  
+- Ações automáticas  
 
 ---
 
-## 9. Roadmap Macro
-
-1. **Fase 0:** Descoberta e Requisitos ✅  
-2. **Fase 1:** Arquitetura Base  
-3. **Fase 2:** Integração WhatsApp  
-4. **Fase 3:** IA e NLP (OpenAI)  
-5. **Fase 4:** Domínio e Regras de Negócio  
-6. **Fase 5:** Persistência  
-7. **Fase 6:** Fluxos Conversacionais Complexos  
-8. **Fase 7:** Qualidade e Testes  
-9. **Fase 8:** Deploy e Evolução  
-
----
-
+## 📄 Licença
+Este projeto é distribuído sob a licença MIT.
