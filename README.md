@@ -20,7 +20,7 @@ Para garantir consistência em todas as interações, existe um documento dedica
 - orientações para evolução da marca  
 
 📄 **Documento completo:**  
-👉 `[Parece que o resultado não era seguro para exibição. Vamos mudar as coisas e tentar outra opção!]`
+👉 [docs/DONNA-IDENTIDADE.md](docs/DONNA-IDENTIDADE.md)
 
 Esse documento serve como referência para:
 
@@ -36,7 +36,7 @@ Esse documento serve como referência para:
 
 Os diagramas completos do fluxo de Tasks, lembretes, categorias e arquitetura geral estão disponíveis em:
 
-👉 `[Parece que o resultado não era seguro para exibição. Vamos mudar as coisas e tentar outra opção!]`
+👉 [docs/DIAGRAMAS.md](docs/DIAGRAMAS.md)
 
 ---
 
