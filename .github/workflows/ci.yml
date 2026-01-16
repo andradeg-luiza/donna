@@ -30,7 +30,7 @@ jobs:
         run: npx prisma generate
 
       - name: Run E2E tests
-        run: npm run check
+        run: npm run test:e2e
 
       - name: Run unit test coverage
         run: npm run coverage:unit
