@@ -257,4 +257,4 @@ npm run test -- --coverage
 ---
 
 ## 📄 Licença
-Este projeto é distribuído sob a licença MIT.
+To be defined.
