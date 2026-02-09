@@ -257,4 +257,6 @@ npm run test -- --coverage
 ---
 
 ## 📄 Licença
+
 ⚠️ This repository is proprietary. Viewing is allowed, but copying, dification, or redistribution is strictly prohibited.
+
