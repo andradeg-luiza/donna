@@ -257,4 +257,4 @@ npm run test -- --coverage
 ---
 
 ## 📄 Licença
-Este projeto é distribuído sob a licença MIT.
+⚠️ This repository is proprietary. Viewing is allowed, but copying, modification, or redistribution is strictly prohibited.
